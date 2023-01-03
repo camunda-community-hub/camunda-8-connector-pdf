@@ -225,6 +225,7 @@
         </plugins>
     </build>
 
+    <!--
     <repositories>
         <repository>
             <releases>
@@ -262,5 +263,5 @@
             <url>https://artifacts.camunda.com/artifactory/camunda-bpm-community-extensions/</url>
         </repository>
     </repositories>
-
+        -->
 </project>
