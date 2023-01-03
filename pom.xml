@@ -4,12 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <groupId>io.camunda.connector</groupId>
+    <artifactId>camunda-8-connector-pdf</artifactId>
+    <version>1.0.0</version>
+
     <name>pdf</name>
     <description>Collection of PDF connectors</description>
-    <groupId>io.camunda.connector</groupId>
-    <artifactId>pdf</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.0</version>
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
@@ -247,6 +248,18 @@
             <id>connectors-snapshots</id>
             <name>Connectors Snapshot Repository</name>
             <url>https://artifacts.camunda.com/artifactory/connectors-snapshots/</url>
+        </repository>
+
+        <repository>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>camunda-community</id>
+            <name>Connectors Snapshot Repository</name>
+            <url>https://artifacts.camunda.com/artifactory/camunda-bpm-community-extensions/</url>
         </repository>
     </repositories>
 
