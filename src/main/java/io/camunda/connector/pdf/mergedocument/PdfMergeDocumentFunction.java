@@ -14,12 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @OutboundConnector(name = PdfMergeDocumentFunction.TYPE_PDF_EXTRACTPAGES, inputVariables = {
-    PdfMergeDocumentInput.INPUT_SOURCE_FILE, PdfMergeDocumentInput.INPUT_FILE_TO_ADD,
+    PdfMergeDocumentInput.INPUT_SOURCE_FILE, // reference to the source file, first page to add
+    PdfMergeDocumentInput.INPUT_FILE_TO_ADD, // reference to the second source file
     PdfMergeDocumentInput.INPUT_DESTINATION_FILE_NAME,
     PdfMergeDocumentInput.INPUT_DESTINATION_STORAGEDEFINITION }, type = PdfMergeDocumentFunction.TYPE_PDF_EXTRACTPAGES)
 
 public class PdfMergeDocumentFunction implements OutboundConnectorFunction {
-  public static final String ERROR_DURING_MERGE = "ERROR_DURING_EXTRACTION";
+  public static final String ERROR_MERGE_ERROR = "MERGE_ERROR";
   public static final String ERROR_DEFINITION_ERROR = "DEFINITION_ERROR";
   public static final String TYPE_PDF_EXTRACTPAGES = "c-pdf-mergepages";
   Logger logger = LoggerFactory.getLogger(PdfMergeDocumentFunction.class.getName());
@@ -36,7 +37,7 @@ public class PdfMergeDocumentFunction implements OutboundConnectorFunction {
     PDDocument destinationDocument = null;
 
     int nbPagesExtracted = 0;
-    logger.info(getLogSignature()+"SourceDocument=|" + pdfExtractPagesInput.getSourceFile() + "] AddDocument["
+    logger.info(getLogSignature() + "SourceDocument=|" + pdfExtractPagesInput.getSourceFile() + "] AddDocument["
         + pdfExtractPagesInput.getFileToAdd() + "]");
 
     try {
@@ -52,11 +53,11 @@ public class PdfMergeDocumentFunction implements OutboundConnectorFunction {
 
       if (docSource == null || docSource.getValue() == null) {
         throw new ConnectorException(PdfToolbox.ERROR_LOAD_ERROR,
-            getLogSignature()+"Can't read file [" + pdfExtractPagesInput.getSourceFile() + "]");
+            getLogSignature() + "Can't read file [" + pdfExtractPagesInput.getSourceFile() + "]");
       }
       if (docFileToAdd == null || docFileToAdd.getValue() == null) {
         throw new ConnectorException(PdfToolbox.ERROR_LOAD_ERROR,
-            getLogSignature()+"Can't read file [" + pdfExtractPagesInput.getFileToAdd() + "]");
+            getLogSignature() + "Can't read file [" + pdfExtractPagesInput.getFileToAdd() + "]");
       }
 
       StorageDefinition destinationStorageDefinition;
@@ -65,7 +66,7 @@ public class PdfMergeDocumentFunction implements OutboundConnectorFunction {
           destinationStorageDefinition = StorageDefinition.getFromString(destinationStorageDefinitionSt);
         } catch (Exception e) {
           throw new ConnectorException(ERROR_DEFINITION_ERROR,
-              getLogSignature()+"Can't decode StorageDefinition [" + destinationStorageDefinitionSt + "]");
+              getLogSignature() + "Can't decode StorageDefinition [" + destinationStorageDefinitionSt + "]");
         }
       } else {
         destinationStorageDefinition = docSource.getStorageDefinition();
@@ -75,12 +76,12 @@ public class PdfMergeDocumentFunction implements OutboundConnectorFunction {
 
       if (docSourcePDF.isEncrypted()) {
         throw new ConnectorException(PdfToolbox.ERROR_ENCRYPTED_PDF_NOT_SUPPORTED,
-            getLogSignature()+"Document [" + pdfExtractPagesInput.getSourceFile() + "] is encrypted");
+            getLogSignature() + "Document [" + pdfExtractPagesInput.getSourceFile() + "] is encrypted");
       }
       docFileToAddPDF = PdfToolbox.loadPdfDocument(docFileToAdd, getName());
       if (docFileToAddPDF.isEncrypted()) {
         throw new ConnectorException(PdfToolbox.ERROR_ENCRYPTED_PDF_NOT_SUPPORTED,
-            getLogSignature()+"Document [" + pdfExtractPagesInput.getFileToAdd() + "] is encrypted");
+            getLogSignature() + "Document [" + pdfExtractPagesInput.getFileToAdd() + "] is encrypted");
       }
       destinationDocument = new PDDocument();
 
@@ -98,20 +99,22 @@ public class PdfMergeDocumentFunction implements OutboundConnectorFunction {
 
       FileVariable outputFileVariable = PdfToolbox.saveOutputPdfDocument(destinationDocument, destinationFileName,
           destinationStorageDefinition, getName());
-      FileVariableReference outputFileReference = fileRepoFactory.saveFileVariable(outputFileVariable);
-
       PdfMergeDocumentOutput pdfExtractPagesOutput = new PdfMergeDocumentOutput();
-      pdfExtractPagesOutput.destinationFile = outputFileReference.toJson();
+      try {
+        FileVariableReference outputFileReference = fileRepoFactory.saveFileVariable(outputFileVariable);
+        pdfExtractPagesOutput.destinationFile = outputFileReference.toJson();
+      } catch( Exception e) {
+        throw new ConnectorException(PdfToolbox.ERROR_SAVE_ERROR, "Error "+e);
+      }
 
-      logger.info(
-          getLogSignature()+"Merge " + docSourcePDF.getNumberOfPages() +
-              nbPagesExtracted+" pages extracted from document[" + docSource.getName() + "] "
-              + " and " + docFileToAddPDF.getNumberOfPages() + " pages document[" + docFileToAdd.getName() + "] "
-              + "to [" + destinationFileName + "]");
+      logger.info(getLogSignature() + "Merge " + docSourcePDF.getNumberOfPages() + nbPagesExtracted
+          + " pages extracted from document[" + docSource.getName() + "] " + " and "
+          + docFileToAddPDF.getNumberOfPages() + " pages document[" + docFileToAdd.getName() + "] " + "to ["
+          + destinationFileName + "]");
       return pdfExtractPagesOutput;
     } catch (Exception e) {
       logger.error("During merge " + e);
-      throw new ConnectorException(ERROR_DURING_MERGE, "Error " + e);
+      throw new ConnectorException(ERROR_MERGE_ERROR, "Error " + e);
     } finally {
       if (docSourcePDF != null)
         try {

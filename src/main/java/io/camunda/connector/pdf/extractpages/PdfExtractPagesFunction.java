@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 public class PdfExtractPagesFunction implements OutboundConnectorFunction {
   public static final String ERROR_INVALID_EXPRESSION = "INVALID_EXPRESSION";
-  public static final String ERROR_DURING_EXTRACTION = "ERROR_DURING_EXTRACTION";
+  public static final String ERROR_EXTRACTION_ERROR = "EXTRACTION_ERROR";
   public static final String ERROR_DEFINITION_ERROR = "DEFINITION_ERROR";
   public static final String TYPE_PDF_EXTRACTPAGES = "c-pdf-extractpages";
   Logger logger = LoggerFactory.getLogger(PdfExtractPagesFunction.class.getName());
@@ -120,7 +120,7 @@ public class PdfExtractPagesFunction implements OutboundConnectorFunction {
       return pdfExtractPagesOutput;
     } catch (Exception e) {
       logger.error(getLogSignature() + "During extraction " + e);
-      throw new ConnectorException(ERROR_DURING_EXTRACTION, "Error " + e);
+      throw new ConnectorException(ERROR_EXTRACTION_ERROR, "Error " + e);
     } finally {
       if (sourceDocument != null)
         try {

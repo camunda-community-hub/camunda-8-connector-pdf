@@ -16,9 +16,12 @@ import org.slf4j.LoggerFactory;
 import java.awt.*;
 
 @OutboundConnector(name = PdfWatermarkFunction.TYPE_PDF_WATERMARK, inputVariables = {
-    PdfWatermarkInput.INPUT_SOURCE_FILE, PdfWatermarkInput.INPUT_WATERMARK, PdfWatermarkInput.INPUT_WATERMARK_POSITION,
-    PdfWatermarkInput.INPUT_WATERMARK_COLOR, PdfWatermarkInput.INPUT_WATERMARK_ROTATION,
-    PdfWatermarkInput.INPUT_DESTINATION_FILE_NAME,
+    PdfWatermarkInput.INPUT_SOURCE_FILE, // PDF source file
+    PdfWatermarkInput.INPUT_WATERMARK, // text to add
+    PdfWatermarkInput.INPUT_WATERMARK_POSITION, // position in the page
+    PdfWatermarkInput.INPUT_WATERMARK_COLOR, // color
+    PdfWatermarkInput.INPUT_WATERMARK_ROTATION, // rotation in degree
+    PdfWatermarkInput.INPUT_DESTINATION_FILE_NAME, // destination file name
     PdfWatermarkInput.INPUT_DESTINATION_STORAGEDEFINITION }, type = PdfWatermarkFunction.TYPE_PDF_WATERMARK)
 
 public class PdfWatermarkFunction implements OutboundConnectorFunction {
@@ -26,10 +29,25 @@ public class PdfWatermarkFunction implements OutboundConnectorFunction {
   public static final String ERROR_DEFINITION_ERROR = "DEFINITION_ERROR";
   public static final String ERROR_INVALID_COLOR = "INVALID_COLOR";
   public static final String TYPE_PDF_WATERMARK = "c-pdf-watermark";
+
+  public static final String COLOR_RED="red";
+  public static final String COLOR_GREEN="green";
+  public static final String COLOR_BLACK="black";
+  public static final String COLOR_BLUE="blue";
+  public static final String COLOR_CYAN= "cyan";
+  public static final String COLOR_GRAY="gray";
+  public static final String COLOR_DARKGRAY="darkGray";
+  public static final String COLOR_LIGHTGRAY="lightGray";
+  public static final String COLOR_MAGENTA="magenta";
+  public static final String COLOR_ORANGE="orange";
+  public static final String COLOR_PINK="pink";
+  public static final String COLOR_WHITE= "white";
+  public static final String COLOR_YELLOW= "yellow";
+
   Logger logger = LoggerFactory.getLogger(PdfWatermarkFunction.class.getName());
 
   @Override
-  public PdfWatermarkOutput execute(OutboundConnectorContext context) throws Exception {
+  public PdfWatermarkOutput execute(OutboundConnectorContext context) throws ConnectorException {
     PdfWatermarkInput pdfWatermarkInput = context.getVariablesAsType(PdfWatermarkInput.class);
     FileRepoFactory fileRepoFactory = FileRepoFactory.getInstance();
     FileVariableReference docSourceReference = null;
@@ -129,31 +147,31 @@ public class PdfWatermarkFunction implements OutboundConnectorFunction {
    * @return the Color object
    */
   private Color getColorFromString(String colorSt) {
-    if ("red".equalsIgnoreCase(colorSt))
+    if (COLOR_RED.equalsIgnoreCase(colorSt))
       return Color.red;
-    if ("green".equalsIgnoreCase(colorSt))
+    if (COLOR_GREEN.equalsIgnoreCase(colorSt))
       return Color.green;
-    if ("black".equalsIgnoreCase(colorSt))
+    if (COLOR_BLACK.equalsIgnoreCase(colorSt))
       return Color.black;
-    if ("blue".equalsIgnoreCase(colorSt))
+    if (COLOR_BLUE.equalsIgnoreCase(colorSt))
       return Color.blue;
-    if ("cyan".equalsIgnoreCase(colorSt))
+    if (COLOR_CYAN.equalsIgnoreCase(colorSt))
       return Color.cyan;
-    if ("gray".equalsIgnoreCase(colorSt))
+    if (COLOR_GRAY.equalsIgnoreCase(colorSt))
       return Color.gray;
-    if ("darkGray".equalsIgnoreCase(colorSt))
+    if (COLOR_DARKGRAY.equalsIgnoreCase(colorSt))
       return Color.darkGray;
-    if ("lightGray".equalsIgnoreCase(colorSt))
+    if (COLOR_LIGHTGRAY.equalsIgnoreCase(colorSt))
       return Color.lightGray;
-    if ("magenta".equalsIgnoreCase(colorSt))
+    if (COLOR_MAGENTA.equalsIgnoreCase(colorSt))
       return Color.magenta;
-    if ("orange".equalsIgnoreCase(colorSt))
+    if (COLOR_ORANGE.equalsIgnoreCase(colorSt))
       return Color.orange;
-    if ("pink".equalsIgnoreCase(colorSt))
+    if (COLOR_PINK.equalsIgnoreCase(colorSt))
       return Color.pink;
-    if ("white".equalsIgnoreCase(colorSt))
+    if (COLOR_WHITE.equalsIgnoreCase(colorSt))
       return Color.white;
-    if ("yellow".equalsIgnoreCase(colorSt))
+    if (COLOR_YELLOW.equalsIgnoreCase(colorSt))
       return Color.yellow;
     return Color.getColor(colorSt);
   }
