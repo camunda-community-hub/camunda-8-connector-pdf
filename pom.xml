@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.camunda.connector</groupId>
-    <artifactId>camunda-8-connector-pdf</artifactId>
+    <artifactId>pdf</artifactId>
     <version>1.0.0</version>
 
     <name>pdf</name>
