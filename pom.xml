@@ -18,7 +18,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- connector SDK version -->
-        <connector-core.version>0.4.0</connector-core.version>
+        <connector-core.version>0.6.0</connector-core.version>
         <connector-validation.version>0.4.0</connector-validation.version>
 
         <!-- Access file -->
