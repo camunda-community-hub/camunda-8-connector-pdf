@@ -19,7 +19,7 @@
 
         <!-- connector SDK version -->
         <connector-core.version>0.4.0</connector-core.version>
-        <connector-validation.version>0.4.0</connector-validation.version>
+        <connector-validation.version>0.7.0</connector-validation.version>
 
         <!-- Access file -->
         <cherryfilestorage.version>1.0.0</cherryfilestorage.version>
