@@ -1,8 +1,7 @@
 package io.camunda.connector.pdf.watermark;
 
 import io.camunda.connector.pdf.toolbox.PdfToolbox;
-
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 public class PdfWatermarkInput {
 

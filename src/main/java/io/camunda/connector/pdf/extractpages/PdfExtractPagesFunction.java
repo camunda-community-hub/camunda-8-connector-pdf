@@ -4,14 +4,18 @@ import io.camunda.connector.api.annotation.OutboundConnector;
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
 import io.camunda.connector.api.outbound.OutboundConnectorFunction;
+import io.camunda.connector.cherrytemplate.CherryConnector;
 import io.camunda.connector.pdf.toolbox.PdfToolbox;
-import io.camunda.file.storage.FileRepoFactory;
-import io.camunda.file.storage.FileVariable;
-import io.camunda.file.storage.FileVariableReference;
-import io.camunda.file.storage.StorageDefinition;
+import io.camunda.filestorage.FileRepoFactory;
+import io.camunda.filestorage.FileVariable;
+import io.camunda.filestorage.FileVariableReference;
+import io.camunda.filestorage.StorageDefinition;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Expression accepted:
@@ -25,7 +29,7 @@ import org.slf4j.LoggerFactory;
     PdfExtractPagesInput.INPUT_DESTINATION_FILE_NAME,
     PdfExtractPagesInput.INPUT_DESTINATION_STORAGEDEFINITION }, type = PdfExtractPagesFunction.TYPE_PDF_EXTRACTPAGES)
 
-public class PdfExtractPagesFunction implements OutboundConnectorFunction {
+public class PdfExtractPagesFunction implements OutboundConnectorFunction, CherryConnector {
   public static final String ERROR_INVALID_EXPRESSION = "INVALID_EXPRESSION";
   public static final String ERROR_EXTRACTION_ERROR = "EXTRACTION_ERROR";
   public static final String ERROR_DEFINITION_ERROR = "DEFINITION_ERROR";
@@ -34,17 +38,16 @@ public class PdfExtractPagesFunction implements OutboundConnectorFunction {
 
   @Override
   public PdfExtractPagesOutput execute(OutboundConnectorContext context) throws Exception {
-    PdfExtractPagesInput pdfExtractPagesInput = context.getVariablesAsType(PdfExtractPagesInput.class);
+    PdfExtractPagesInput pdfExtractPagesInput = context.bindVariables(PdfExtractPagesInput.class);
     FileRepoFactory fileRepoFactory = FileRepoFactory.getInstance();
-    FileVariableReference docSourceReference = null;
+    FileVariableReference docSourceReference;
     PDDocument sourceDocument = null;
     PDDocument destinationDocument = null;
     String extractExpression = pdfExtractPagesInput.getExtractExpression();
 
     int nbPagesExtracted = 0;
-    logger.info(
-        getLogSignature() + "sourceDocument=|" + pdfExtractPagesInput.getSourceFile() + "] extract[" + extractExpression
-            + "]");
+    logger.info("{} sourceDocument=[{}] extract[{}] ", getLogSignature(), pdfExtractPagesInput.getSourceFile(),
+        extractExpression);
 
     try {
       docSourceReference = FileVariableReference.fromJson(pdfExtractPagesInput.getSourceFile());
@@ -78,7 +81,7 @@ public class PdfExtractPagesFunction implements OutboundConnectorFunction {
       }
       destinationDocument = new PDDocument();
       // replace any "n" information in the expression by the number of page
-      String extractExpressionResolved = extractExpression.replaceAll("n",
+      String extractExpressionResolved = extractExpression.replace("n",
           String.valueOf(sourceDocument.getNumberOfPages()));
       String[] expressionsList = extractExpressionResolved.split(",", 0);
       for (String oneExpression : expressionsList) {
@@ -114,12 +117,11 @@ public class PdfExtractPagesFunction implements OutboundConnectorFunction {
       PdfExtractPagesOutput pdfExtractPagesOutput = new PdfExtractPagesOutput();
       pdfExtractPagesOutput.destinationFile = outputFileReference.toJson();
 
-      logger.info(
-          getLogSignature() + "Extract " + nbPagesExtracted + " pages from document[" + docSource.getName() + "] to ["
-              + destinationFileName + "]");
+      logger.info("{} Extract {} pages from document[{}] to [{}]", getLogSignature(), nbPagesExtracted,
+          docSource.getName(), destinationFileName);
       return pdfExtractPagesOutput;
     } catch (Exception e) {
-      logger.error(getLogSignature() + "During extraction " + e);
+      logger.error("{} Exception during extraction {} ", getLogSignature(), e);
       throw new ConnectorException(ERROR_EXTRACTION_ERROR, "Error " + e);
     } finally {
       if (sourceDocument != null)
@@ -146,5 +148,42 @@ public class PdfExtractPagesFunction implements OutboundConnectorFunction {
 
   private String getLogSignature() {
     return "Connector [" + getName() + "]:";
+  }
+
+  @Override
+  public String getDescription() {
+    return "Extract pages from a PDF. A String pilot the extraction, to get the list of page to extract";
+  }
+
+  @Override
+  public String getLogo() {
+    return PdfToolbox.getLogo();
+  }
+
+  @Override
+  public String getCollectionName() {
+    return PdfToolbox.getCollectionName();
+  }
+
+  @Override
+  public Map<String, String> getListBpmnErrors() {
+    return Map.of(ERROR_INVALID_EXPRESSION, "Invalid expression to pilot the extraction", ERROR_EXTRACTION_ERROR,
+        "Extraction error", ERROR_DEFINITION_ERROR, "Definition error");
+
+  }
+
+  @Override
+  public Class<PdfExtractPagesInput> getInputParameterClass() {
+    return PdfExtractPagesInput.class;
+  }
+
+  @Override
+  public Class<PdfExtractPagesOutput> getOutputParameterClass() {
+    return PdfExtractPagesOutput.class;
+  }
+
+  @Override
+  public List<String> appliesTo() {
+    return List.of("bpmn:Task");
   }
 }

@@ -4,14 +4,20 @@ import io.camunda.connector.api.annotation.OutboundConnector;
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
 import io.camunda.connector.api.outbound.OutboundConnectorFunction;
+import io.camunda.connector.cherrytemplate.CherryConnector;
+import io.camunda.connector.pdf.extractpages.PdfExtractPagesInput;
+import io.camunda.connector.pdf.extractpages.PdfExtractPagesOutput;
 import io.camunda.connector.pdf.toolbox.PdfToolbox;
-import io.camunda.file.storage.FileRepoFactory;
-import io.camunda.file.storage.FileVariable;
-import io.camunda.file.storage.FileVariableReference;
-import io.camunda.file.storage.StorageDefinition;
+import io.camunda.filestorage.FileRepoFactory;
+import io.camunda.filestorage.FileVariable;
+import io.camunda.filestorage.FileVariableReference;
+import io.camunda.filestorage.StorageDefinition;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
 
 @OutboundConnector(name = PdfMergeDocumentFunction.TYPE_PDF_EXTRACTPAGES, inputVariables = {
     PdfMergeDocumentInput.INPUT_SOURCE_FILE, // reference to the source file, first page to add
@@ -19,7 +25,7 @@ import org.slf4j.LoggerFactory;
     PdfMergeDocumentInput.INPUT_DESTINATION_FILE_NAME,
     PdfMergeDocumentInput.INPUT_DESTINATION_STORAGEDEFINITION }, type = PdfMergeDocumentFunction.TYPE_PDF_EXTRACTPAGES)
 
-public class PdfMergeDocumentFunction implements OutboundConnectorFunction {
+public class PdfMergeDocumentFunction implements OutboundConnectorFunction, CherryConnector {
   public static final String ERROR_MERGE_ERROR = "MERGE_ERROR";
   public static final String ERROR_DEFINITION_ERROR = "DEFINITION_ERROR";
   public static final String TYPE_PDF_EXTRACTPAGES = "c-pdf-mergepages";
@@ -27,18 +33,18 @@ public class PdfMergeDocumentFunction implements OutboundConnectorFunction {
 
   @Override
   public PdfMergeDocumentOutput execute(OutboundConnectorContext context) throws Exception {
-    PdfMergeDocumentInput pdfExtractPagesInput = context.getVariablesAsType(PdfMergeDocumentInput.class);
+    PdfMergeDocumentInput pdfExtractPagesInput = context.bindVariables(PdfMergeDocumentInput.class);
     FileRepoFactory fileRepoFactory = FileRepoFactory.getInstance();
 
-    FileVariableReference docSourceReference = null;
-    FileVariableReference docFileToAddReference = null;
+    FileVariableReference docSourceReference;
+    FileVariableReference docFileToAddReference;
     PDDocument docSourcePDF = null;
     PDDocument docFileToAddPDF = null;
     PDDocument destinationDocument = null;
 
     int nbPagesExtracted = 0;
-    logger.info(getLogSignature() + "SourceDocument=|" + pdfExtractPagesInput.getSourceFile() + "] AddDocument["
-        + pdfExtractPagesInput.getFileToAdd() + "]");
+    logger.info("{} SourceDocument=[{}] AddDocument[{}] ", getLogSignature(), pdfExtractPagesInput.getSourceFile(),
+        pdfExtractPagesInput.getFileToAdd());
 
     try {
       docSourceReference = FileVariableReference.fromJson(pdfExtractPagesInput.getSourceFile());
@@ -103,17 +109,21 @@ public class PdfMergeDocumentFunction implements OutboundConnectorFunction {
       try {
         FileVariableReference outputFileReference = fileRepoFactory.saveFileVariable(outputFileVariable);
         pdfExtractPagesOutput.destinationFile = outputFileReference.toJson();
-      } catch( Exception e) {
-        throw new ConnectorException(PdfToolbox.ERROR_SAVE_ERROR, "Error "+e);
+      } catch (Exception e) {
+        throw new ConnectorException(PdfToolbox.ERROR_SAVE_ERROR, "Error " + e);
       }
 
-      logger.info(getLogSignature() + "Merge " + docSourcePDF.getNumberOfPages() + nbPagesExtracted
-          + " pages extracted from document[" + docSource.getName() + "] " + " and "
-          + docFileToAddPDF.getNumberOfPages() + " pages document[" + docFileToAdd.getName() + "] " + "to ["
-          + destinationFileName + "]");
+      logger.info("{} extract {} page from document[{}] ({} pages): add {} pages from document[{}] to [{}]",
+          getLogSignature(),
+          nbPagesExtracted,
+          docSource.getName(),
+          docSourcePDF.getNumberOfPages(),
+          docFileToAddPDF.getNumberOfPages(),
+          docFileToAdd.getName(),
+           destinationFileName );
       return pdfExtractPagesOutput;
     } catch (Exception e) {
-      logger.error("During merge " + e);
+      logger.error("{} Exception during merge {}", getLogSignature(), e);
       throw new ConnectorException(ERROR_MERGE_ERROR, "Error " + e);
     } finally {
       if (docSourcePDF != null)
@@ -146,5 +156,40 @@ public class PdfMergeDocumentFunction implements OutboundConnectorFunction {
 
   private String getLogSignature() {
     return "Connector [" + getName() + "]:";
+  }
+
+  @Override
+  public String getDescription() {
+    return null;
+  }
+
+  @Override
+  public String getLogo() {
+    return PdfToolbox.getLogo();
+  }
+
+  @Override
+  public String getCollectionName() {
+    return PdfToolbox.getCollectionName();
+  }
+
+  @Override
+  public Map<String, String> getListBpmnErrors() {
+    return null;
+  }
+
+  @Override
+  public Class<PdfExtractPagesInput> getInputParameterClass() {
+    return null;
+  }
+
+  @Override
+  public Class<PdfExtractPagesOutput> getOutputParameterClass() {
+    return null;
+  }
+
+  @Override
+  public List<String> appliesTo() {
+    return null;
   }
 }

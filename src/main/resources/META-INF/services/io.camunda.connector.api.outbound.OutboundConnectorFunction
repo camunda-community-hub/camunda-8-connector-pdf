@@ -1,0 +1,3 @@
+io.camunda.connector.pdf.extractpages.PdfExtractPagesFunction
+io.camunda.connector.pdf.mergedocument.PdfMergeDocumentFunction
+io.camunda.connector.pdf.watermark.PdfWatermarkFunction

@@ -4,16 +4,21 @@ import io.camunda.connector.api.annotation.OutboundConnector;
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
 import io.camunda.connector.api.outbound.OutboundConnectorFunction;
+import io.camunda.connector.cherrytemplate.CherryConnector;
+import io.camunda.connector.pdf.extractpages.PdfExtractPagesInput;
+import io.camunda.connector.pdf.extractpages.PdfExtractPagesOutput;
 import io.camunda.connector.pdf.toolbox.PdfToolbox;
-import io.camunda.file.storage.FileRepoFactory;
-import io.camunda.file.storage.FileVariable;
-import io.camunda.file.storage.FileVariableReference;
-import io.camunda.file.storage.StorageDefinition;
+import io.camunda.filestorage.FileRepoFactory;
+import io.camunda.filestorage.FileVariable;
+import io.camunda.filestorage.FileVariableReference;
+import io.camunda.filestorage.StorageDefinition;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
+import java.util.List;
+import java.util.Map;
 
 @OutboundConnector(name = PdfWatermarkFunction.TYPE_PDF_WATERMARK, inputVariables = {
     PdfWatermarkInput.INPUT_SOURCE_FILE, // PDF source file
@@ -24,33 +29,33 @@ import java.awt.*;
     PdfWatermarkInput.INPUT_DESTINATION_FILE_NAME, // destination file name
     PdfWatermarkInput.INPUT_DESTINATION_STORAGEDEFINITION }, type = PdfWatermarkFunction.TYPE_PDF_WATERMARK)
 
-public class PdfWatermarkFunction implements OutboundConnectorFunction {
+public class PdfWatermarkFunction implements OutboundConnectorFunction, CherryConnector {
   public static final String ERROR_OPERATION_ERROR = "OPERATION_ERROR";
   public static final String ERROR_DEFINITION_ERROR = "DEFINITION_ERROR";
   public static final String ERROR_INVALID_COLOR = "INVALID_COLOR";
   public static final String TYPE_PDF_WATERMARK = "c-pdf-watermark";
 
-  public static final String COLOR_RED="red";
-  public static final String COLOR_GREEN="green";
-  public static final String COLOR_BLACK="black";
-  public static final String COLOR_BLUE="blue";
-  public static final String COLOR_CYAN= "cyan";
-  public static final String COLOR_GRAY="gray";
-  public static final String COLOR_DARKGRAY="darkGray";
-  public static final String COLOR_LIGHTGRAY="lightGray";
-  public static final String COLOR_MAGENTA="magenta";
-  public static final String COLOR_ORANGE="orange";
-  public static final String COLOR_PINK="pink";
-  public static final String COLOR_WHITE= "white";
-  public static final String COLOR_YELLOW= "yellow";
+  public static final String COLOR_RED = "red";
+  public static final String COLOR_GREEN = "green";
+  public static final String COLOR_BLACK = "black";
+  public static final String COLOR_BLUE = "blue";
+  public static final String COLOR_CYAN = "cyan";
+  public static final String COLOR_GRAY = "gray";
+  public static final String COLOR_DARKGRAY = "darkGray";
+  public static final String COLOR_LIGHTGRAY = "lightGray";
+  public static final String COLOR_MAGENTA = "magenta";
+  public static final String COLOR_ORANGE = "orange";
+  public static final String COLOR_PINK = "pink";
+  public static final String COLOR_WHITE = "white";
+  public static final String COLOR_YELLOW = "yellow";
 
   Logger logger = LoggerFactory.getLogger(PdfWatermarkFunction.class.getName());
 
   @Override
   public PdfWatermarkOutput execute(OutboundConnectorContext context) throws ConnectorException {
-    PdfWatermarkInput pdfWatermarkInput = context.getVariablesAsType(PdfWatermarkInput.class);
+    PdfWatermarkInput pdfWatermarkInput = context.bindVariables(PdfWatermarkInput.class);
     FileRepoFactory fileRepoFactory = FileRepoFactory.getInstance();
-    FileVariableReference docSourceReference = null;
+    FileVariableReference docSourceReference;
     PDDocument sourceDocument = null;
 
     try {
@@ -64,7 +69,7 @@ public class PdfWatermarkFunction implements OutboundConnectorFunction {
 
       if (docSource == null || docSource.getValue() == null) {
         throw new ConnectorException(PdfToolbox.ERROR_LOAD_ERROR,
-            getLogSignature()+"Can't read file[" + pdfWatermarkInput.getSourceFile() + "]");
+            getLogSignature() + "Can't read file[" + pdfWatermarkInput.getSourceFile() + "]");
       }
       StorageDefinition destinationStorageDefinition;
       if (destinationStorageDefinitionSt != null && !destinationStorageDefinitionSt.trim().isEmpty()) {
@@ -72,7 +77,7 @@ public class PdfWatermarkFunction implements OutboundConnectorFunction {
           destinationStorageDefinition = StorageDefinition.getFromString(destinationStorageDefinitionSt);
         } catch (Exception e) {
           throw new ConnectorException(ERROR_DEFINITION_ERROR,
-              getLogSignature()+"Can't decode StorageDefinition [" + destinationStorageDefinitionSt + "]");
+              getLogSignature() + "Can't decode StorageDefinition [" + destinationStorageDefinitionSt + "]");
         }
       } else {
         destinationStorageDefinition = docSource.getStorageDefinition();
@@ -91,7 +96,7 @@ public class PdfWatermarkFunction implements OutboundConnectorFunction {
         Color color = getColorFromString(watermarkColorSt);
         if (color == null)
           throw new ConnectorException(ERROR_INVALID_COLOR,
-              getLogSignature()+"Color [" + watermarkColorSt + "] is unknown]");
+              getLogSignature() + "Color [" + watermarkColorSt + "] is unknown]");
 
         writerOption.setColor(color);
       }
@@ -112,15 +117,15 @@ public class PdfWatermarkFunction implements OutboundConnectorFunction {
 
       PdfWatermarkOutput pdfWatermarkOutput = new PdfWatermarkOutput();
       pdfWatermarkOutput.destinationFile = outputFileReference.toJson();
-      logger.info(getLogSignature()+"Finish watermark["+watermark+"] Document[" + pdfWatermarkInput.getSourceFile() + "] to ["
-          + pdfWatermarkInput.getDestinationFileName() + "]");
+      logger.info("{} finish Watermark [{}] document[{}] to [{}] ", getLogSignature(), watermark,
+          pdfWatermarkInput.getSourceFile(), pdfWatermarkInput.getDestinationFileName());
       return pdfWatermarkOutput;
 
     } catch (Exception e) {
-      logger.error(getLogSignature()+"During extraction " + e);
+      logger.error("{} exception during extraction ", getLogSignature(), e);
       throw new ConnectorException(ERROR_OPERATION_ERROR,
-          getLogSignature()+"Can't execute watermark operation on [" + pdfWatermarkInput.getSourceFile()
-              + "] : " + e);
+          getLogSignature() + "Can't execute watermark operation on [" + pdfWatermarkInput.getSourceFile() + "] : "
+              + e);
 
     } finally {
       if (sourceDocument != null)
@@ -140,6 +145,7 @@ public class PdfWatermarkFunction implements OutboundConnectorFunction {
   private String getLogSignature() {
     return "Connector [" + getName() + "]:";
   }
+
   /**
    * return the color from a string. Constant are accepted and decoded.
    *
@@ -176,4 +182,38 @@ public class PdfWatermarkFunction implements OutboundConnectorFunction {
     return Color.getColor(colorSt);
   }
 
+  @Override
+  public String getDescription() {
+    return null;
+  }
+
+  @Override
+  public String getLogo() {
+    return PdfToolbox.getLogo();
+  }
+
+  @Override
+  public String getCollectionName() {
+    return PdfToolbox.getCollectionName();
+  }
+
+  @Override
+  public Map<String, String> getListBpmnErrors() {
+    return null;
+  }
+
+  @Override
+  public Class<PdfExtractPagesInput> getInputParameterClass() {
+    return null;
+  }
+
+  @Override
+  public Class<PdfExtractPagesOutput> getOutputParameterClass() {
+    return null;
+  }
+
+  @Override
+  public List<String> appliesTo() {
+    return null;
+  }
 }

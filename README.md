@@ -1,10 +1,91 @@
+[![Community badge: Incubating](https://img.shields.io/badge/Lifecycle-Incubating-blue)](https://github.com/Camunda-Community-Hub/community/blob/main/extension-lifecycle.md#incubating-)
+[![Community extension badge](https://img.shields.io/badge/Community%20Extension-An%20open%20source%20community%20maintained%20project-FF4700)](https://github.com/camunda-community-hub/community)
+![Compatible with: Camunda Platform 8](https://img.shields.io/badge/Compatible%20with-Camunda%20Platform%208-0072Ce)
+
 # camunda-8-connector-pdf
-Connectors on PDF documents
+Multiple Connectors on PDF documents.
 
 These connectors used the File Storage library to access and save the document.
 Use the Load connector to upload the document in the process. See Cherry FileStorage connector (https://github.com/camunda-community-hub/zeebe-cherry-framework or https://github.com/camunda-community-hub/camunda-8-connector-filestorage)
 
 # c-pdf-mergepages
+
+## Principle
+
+## Inputs
+| Name                           | Description                                                                                                         | Class             | Default | Level     |
+|--------------------------------|---------------------------------------------------------------------------------------------------------------------|-------------------|---------|-----------|
+| sourceFileVariableFileVariable | For the file to convert                                                                                             | java.lang.Object  |         | REQUIRED  |
+
+## Output
+| Name             | Description                                         | Class             | Level    |
+|------------------|-----------------------------------------------------|-------------------|----------|
+| pdfFileVariable  | FileVariable converted (a File Variable Reference)  | java.lang.Object  | REQUIRED |
+
+
+## BPMN Errors
+
+| Name             | Explanation       |
+|------------------|-------------------|
+| LOAD_FILE_ERROR  | Load File error   |
+
+
+
+
+# extract pages
+
+## Principle
+
+## Inputs
+| Name                           | Description                                                                                                         | Class             | Default | Level     |
+|--------------------------------|---------------------------------------------------------------------------------------------------------------------|-------------------|---------|-----------|
+| sourceFileVariableFileVariable | For the file to convert                                                                                             | java.lang.Object  |         | REQUIRED  |
+
+## Output
+| Name             | Description                                         | Class             | Level    |
+|------------------|-----------------------------------------------------|-------------------|----------|
+| pdfFileVariable  | FileVariable converted (a File Variable Reference)  | java.lang.Object  | REQUIRED |
+
+
+## BPMN Errors
+
+| Name             | Explanation       |
+|------------------|-------------------|
+| LOAD_FILE_ERROR  | Load File error   |
+
+
+
+# Watermark
+
+## Principle
+
+## Inputs
+| Name                           | Description                                                                                                         | Class             | Default | Level     |
+|--------------------------------|---------------------------------------------------------------------------------------------------------------------|-------------------|---------|-----------|
+| sourceFileVariableFileVariable | For the file to convert                                                                                             | java.lang.Object  |         | REQUIRED  |
+
+## Output
+| Name             | Description                                         | Class             | Level    |
+|------------------|-----------------------------------------------------|-------------------|----------|
+| pdfFileVariable  | FileVariable converted (a File Variable Reference)  | java.lang.Object  | REQUIRED |
+
+
+## BPMN Errors
+
+| Name             | Explanation       |
+|------------------|-------------------|
+| LOAD_FILE_ERROR  | Load File error   |
+
+
+
+
+
+
+
+
+
+
+
 This connector merges two PDF files into one PDF file.
 
 Two process variable provides documents. Process variables contain a reference to the document itself.
@@ -12,13 +93,37 @@ Two process variable provides documents. Process variables contain a reference t
 
 The result is a new document saved with the same library. The result process variable contains the reference to the document.
 
+
+
+## Manipulating file
+
+Via the **File Storage** library, The process variable contains only a reference.
+The core document, which may be saved in a Folder, Temporary Folder, or CMIS or any repository available via the library.
+
+The result is saved in the File Storage: this is why the connetor ask for a StorageDefinition.
+The result process variable will contains only the reference to the file. If no "destinationStorageDefinition"
+is provided, the PDF is saved in the same storage than the source document.
+
+To get the result of the file on a file system, use any connector or application using the File Storage API.
+
+Find the user documentation in our [Camunda Platform 8 Docs](https://docs.camunda.io/docs/components/integration-framework/connectors/out-of-the-box-connectors/slack/).
+
 # Build
 
 ```bash
 mvn clean package
 ```
 
-## API
+Two jars are produced. The jar with all dependency can be upload in the [Cherry Framework](https://github.com/camunda-community-hub/zeebe-cherry-framework)
+
+## Element Template
+
+The element templates can be found in the [element-templates](element-template) directory.
+
+
+
+
+
 
 ### Input
 

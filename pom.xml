@@ -6,7 +6,7 @@
 
     <groupId>io.camunda.connector</groupId>
     <artifactId>pdf</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 
     <name>pdf</name>
     <description>Collection of PDF connectors</description>
@@ -18,65 +18,63 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- connector SDK version -->
-        <connector-core.version>0.4.0</connector-core.version>
-        <connector-validation.version>0.4.0</connector-validation.version>
+        <version.connector-core>8.5.0</version.connector-core>
+        <version.connector-runtime>8.5.0</version.connector-runtime>
 
-        <!-- Access file -->
-        <cherryfilestorage.version>1.0.0</cherryfilestorage.version>
+        <version.opensagres>2.0.4</version.opensagres>
+        <version.filestorage>1.2.0</version.filestorage>
 
         <!-- external libraries -->
-        <assertj.version>3.24.1</assertj.version>
-        <junit-jupiter.version>5.9.2</junit-jupiter.version>
-        <mockito.version>4.11.0</mockito.version>
-        <slf4j.version>2.0.5</slf4j.version>
+        <version.assertj>3.24.2</version.assertj>
+        <version.junit-jupiter>5.10.1</version.junit-jupiter>
+        <version.mockito>5.7.0</version.mockito>
+        <version.slf4j>2.0.9</version.slf4j>
+
 
         <opensagres.version>2.0.3</opensagres.version>
 
         <!-- maven plugins -->
-        <plugin.version.maven-clean-plugin>3.2.0</plugin.version.maven-clean-plugin>
-        <plugin.version.maven-compiler-plugin>3.10.1</plugin.version.maven-compiler-plugin>
-        <plugin.version.maven-dependency-plugin>3.3.0</plugin.version.maven-dependency-plugin>
-        <plugin.version.maven-install-plugin>3.0.1</plugin.version.maven-install-plugin>
-        <plugin.version.maven-jar-plugin>3.2.2</plugin.version.maven-jar-plugin>
-        <plugin.version.maven-resources-plugin>3.3.0</plugin.version.maven-resources-plugin>
-        <plugin.version.maven-shade-plugin>3.4.1</plugin.version.maven-shade-plugin>
-        <plugin.version.maven-surefire-plugin>3.0.0-M7</plugin.version.maven-surefire-plugin>
-    </properties>
-
-
+        <plugin.version.maven-clean-plugin>3.3.2</plugin.version.maven-clean-plugin>
+        <plugin.version.maven-compiler-plugin>3.13.0</plugin.version.maven-compiler-plugin>
+        <plugin.version.maven-dependency-plugin>3.6.1</plugin.version.maven-dependency-plugin>
+        <plugin.version.maven-install-plugin>3.1.1</plugin.version.maven-install-plugin>
+        <plugin.version.maven-jar-plugin>3.3.0</plugin.version.maven-jar-plugin>
+        <plugin.version.maven-resources-plugin>3.3.1</plugin.version.maven-resources-plugin>
+        <plugin.version.maven-shade-plugin>3.5.2</plugin.version.maven-shade-plugin>
+        <plugin.version.maven-surefire-plugin>3.2.5</plugin.version.maven-surefire-plugin>   </properties>
     <parent>
         <groupId>org.camunda.community</groupId>
         <artifactId>community-hub-release-parent</artifactId>
-        <version>1.3.1</version>
+        <version>1.4.2</version>
     </parent>
 
     <dependencies>
         <dependency>
             <groupId>io.camunda.connector</groupId>
             <artifactId>connector-core</artifactId>
-            <version>${connector-core.version}</version>
+            <version>${version.connector-core}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.camunda.connector</groupId>
             <artifactId>connector-validation</artifactId>
-            <version>${connector-validation.version}</version>
+            <version>${version.connector-core}</version>
             <scope>provided</scope>
         </dependency>
 
-        <!-- Access file : not accessible in the Camunda Repository
+
         <dependency>
-            <groupId>io.camunda.connector</groupId>
-            <artifactId>zebee-cherry-filestorage</artifactId>
-            <version>${cherryfilestorage.version}</version>
-            <scope>provided</scope>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${version.slf4j}</version>
         </dependency>
-        -->
-        <!-- temporary to access filestorage -->
+
+
+        <!-- Access file  -->
         <dependency>
-            <groupId>org.camunda.community</groupId>
-            <artifactId>zeebe-cherry-framework</artifactId>
-            <version>2.2.0</version>
+            <groupId>io.camunda.filestorage</groupId>
+            <artifactId>filestorage</artifactId>
+            <version>${version.filestorage}</version>
         </dependency>
 
 
@@ -85,21 +83,6 @@
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
-
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>test</scope>
-        </dependency>
-
 
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
@@ -118,26 +101,39 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>${junit-jupiter.version}</version>
+            <version>${version.junit-jupiter}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>${mockito.version}</version>
+            <version>${version.mockito}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
+            <version>${version.assertj}</version>
             <scope>test</scope>
         </dependency>
 
-
+        <!-- for testing connectors locally in bundle with runtime -->
+        <dependency>
+            <groupId>io.camunda.connector</groupId>
+            <artifactId>spring-boot-starter-camunda-connectors</artifactId>
+            <version>${version.connector-core}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
+
 
     <build>
         <pluginManagement>
@@ -189,6 +185,7 @@
                                 <artifact>*:*</artifact>
                                 <excludes>
                                     <exclude>module-info.class</exclude>
+                                    <exclude>META-INF/MANIFEST.MF</exclude>
                                     <exclude>META-INF/*.SF</exclude>
                                     <exclude>META-INF/*.DSA</exclude>
                                     <exclude>META-INF/*.RSA</exclude>
@@ -204,8 +201,8 @@
                             <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
                                 <addHeader>false</addHeader>
                             </transformer>
+                            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"/>
                         </transformers>
-
                     </configuration>
                     <executions>
                         <execution>
@@ -232,7 +229,6 @@
         </plugins>
     </build>
 
-
     <repositories>
         <repository>
             <releases>
@@ -257,7 +253,6 @@
             <name>Connectors Snapshot Repository</name>
             <url>https://artifacts.camunda.com/artifactory/connectors-snapshots/</url>
         </repository>
-
         <repository>
             <releases>
                 <enabled>true</enabled>
@@ -269,6 +264,21 @@
             <name>Camunda Community</name>
             <url>https://artifacts.camunda.com/artifactory/camunda-bpm-community-extensions/</url>
         </repository>
+
     </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>connectors</id>
+            <name>Connectors Repository</name>
+            <url>https://artifacts.camunda.com/artifactory/connectors/</url>
+        </pluginRepository>
+
+        <pluginRepository>
+            <id>connectors-snapshots</id>
+            <name>Connectors Snapshot Repository</name>
+            <url>https://artifacts.camunda.com/artifactory/connectors-snapshots/</url>
+        </pluginRepository>
+    </pluginRepositories>
 
 </project>

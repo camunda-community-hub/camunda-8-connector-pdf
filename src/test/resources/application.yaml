@@ -1,0 +1,21 @@
+# Configuration for running connectors in bundle with connector-runtime
+
+# Cloud connection
+# zeebe.client.cloud:
+#    region=bru-2
+#    clusterId=xxx
+#    clientId=xxx
+#    clientSecret=xxx
+
+
+# local connection
+zeebe.client:
+  broker.gateway-address: 127.0.0.1:26500
+  # zeebe.client.broker.gateway-address=host.docker.internal:26500
+  security.plaintext: true
+
+# Don't run the connection to Operate (not an inbound connection)
+camunda.connector.polling.enabled: false
+camunda.connector.webhook.enabled: false
+spring.main.web-application-type: none
+operate.client.enabled: false
