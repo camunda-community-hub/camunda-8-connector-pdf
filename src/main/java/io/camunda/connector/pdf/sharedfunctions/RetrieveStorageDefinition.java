@@ -15,8 +15,8 @@ public class RetrieveStorageDefinition {
   private static final Logger logger = LoggerFactory.getLogger(RetrieveStorageDefinition.class.getName());
 
   private static final String ERROR_BAD_STORAGE_DEFINITION = "BAD_STORAGE_DEFINITION";
-  private static final String ERROR_BAD_STORAGE_DEFINITION_LABEL = "The storage definition is not correctly describe";
-  private static final String ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE = "ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE";
+  private static final String ERROR_BAD_STORAGE_DEFINITION_LABEL = "The storage definition does not correctly describe";
+  private static final String ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE = "NO_DESTINATION_STORAGE_DEFINITION_DEFINE";
   private static final String ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE_LABEL = "No Storage definition is found, please define one";
 
   /**

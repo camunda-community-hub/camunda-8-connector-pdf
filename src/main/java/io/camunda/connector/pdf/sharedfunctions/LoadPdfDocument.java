@@ -11,11 +11,13 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 public class LoadPdfDocument {
-  public static final String ERROR_LOAD_PDF_ERROR_LABEL = "Error reading the document - is that a PDF?";
-  public static final String ERROR_ENCRYPTED_PDF_NOT_SUPPORTED_LABEL = "An Encrypted PDF is not supported";
-  private static final Logger logger = LoggerFactory.getLogger(LoadPdfDocument.class.getName());
   private static final String ERROR_LOAD_PDF_ERROR = "LOAD_PDF_ERROR";
+  private static final String ERROR_LOAD_PDF_ERROR_LABEL = "Error reading the document - is that a PDF?";
+
   private static final String ERROR_ENCRYPTED_PDF_NOT_SUPPORTED = "ENCRYPTED_PDF_NOT_SUPPORTED";
+  private static final String ERROR_ENCRYPTED_PDF_NOT_SUPPORTED_LABEL = "Encrypted PDF is not supported";
+
+  private static final Logger logger = LoggerFactory.getLogger(LoadPdfDocument.class.getName());
 
   /**
    * Toolbox, only static method

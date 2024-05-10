@@ -75,14 +75,16 @@ public class PdfWatermarkFunction implements PdfSubFunction {
       // Exception PdfToolbox.ERROR_CREATE_FILEVARIABLE, PdfToolbox.ERROR_SAVE_ERROR
       PdfOutput pdfOutput = SavePdfDocument.savePdfFile(new PdfOutput(), sourceDocument, destinationFileName,
           destinationStorageDefinition, fileRepoFactory, this);
-      logger.info("{} finish Watermark [{}] document[{}] to [{}] ", getLogSignature(), watermark,
+      logger.info("{} finish Watermark [{}] document[{}] to [{}] ", PdfToolbox.getLogSignature(this), watermark,
           pdfInput.getSourceFile(), pdfInput.getDestinationFileName());
       return pdfOutput;
-
+    } catch (ConnectorException ce) {
+      // already logged
+      throw ce;
     } catch (IOException e) {
-      logger.error("{} exception during extraction ", getLogSignature(), e);
+      logger.error("{} exception during extraction ", PdfToolbox.getLogSignature(this), e);
       throw new ConnectorException(PdfToolbox.ERROR_DURING_OPERATION,
-          getLogSignature() + "Can't execute watermark operation on [" + pdfInput.getSourceFile() + "] : " + e.getMessage());
+          PdfToolbox.getLogSignature(this) + "Can't execute watermark operation on [" + pdfInput.getSourceFile() + "] : " + e.getMessage());
 
     } finally {
       if (sourceDocument != null)
@@ -95,6 +97,11 @@ public class PdfWatermarkFunction implements PdfSubFunction {
 
   }
 
+  /**
+   * calculate the writer option from the input
+   * @param pdfInput inputs
+   * @return writer option
+   */
   private PdfToolbox.WriterOption getWriterOption(PdfInput pdfInput) {
     PdfToolbox.WriterOption writerOption = PdfToolbox.WriterOption.getInstance();
 
@@ -107,7 +114,7 @@ public class PdfWatermarkFunction implements PdfSubFunction {
       Color color = getColorFromString(watermarkColorSt);
       if (color == null)
         throw new ConnectorException(ERROR_INVALID_COLOR,
-            getLogSignature() + "Color [" + watermarkColorSt + "] is unknown]");
+            PdfToolbox.getLogSignature(this) + "Color [" + watermarkColorSt + "] is unknown]");
 
       writerOption.setColor(color);
     }
@@ -157,9 +164,6 @@ public class PdfWatermarkFunction implements PdfSubFunction {
     return Color.getColor(colorSt);
   }
 
-  private String getLogSignature() {
-    return "Connector [" + getSubFunctionName() + "]:";
-  }
 
   @Override
   public List<PdfParameter> getSubFunctionParameters(TypeParameter typeParameter) {

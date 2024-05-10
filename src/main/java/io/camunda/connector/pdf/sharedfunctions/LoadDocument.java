@@ -15,10 +15,10 @@ public class LoadDocument {
   private static final Logger logger = LoggerFactory.getLogger(LoadDocument.class.getName());
 
   private static final String ERROR_LOAD_DOCSOURCE = "LOAD_DOCSOURCE";
-  private static final String ERROR_LOAD_DOCSOURCE_LABEL = "An error arrived when the doc source is loaded";
+  private static final String ERROR_LOAD_DOCSOURCE_LABEL = "The reference can't be decoded";
 
   private static final String ERROR_LOAD_ERROR = "LOAD_ERROR";
-  private static final String ERROR_LOAD_ERROR_LABEL = "An error occur during the load";
+  private static final String ERROR_LOAD_ERROR_LABEL = "An error occurs during the load";
 
   /**
    * Toolbox, only static method
@@ -38,6 +38,8 @@ public class LoadDocument {
     try {
       FileVariableReference docSourceReference = FileVariableReference.fromJson(sourceFile);
       return loadDocSourceFromReference(docSourceReference, fileRepoFactory, subFunction);
+    } catch (ConnectorException ce) {
+      throw ce;
     } catch (Exception e) {
       logger.error("{} Exception during extraction on sourceFile[{}] : {} ", PdfToolbox.getLogSignature(subFunction), sourceFile, e);
       throw new ConnectorException(ERROR_LOAD_DOCSOURCE, "Document["+sourceFile+"] Error " + e);
@@ -57,8 +59,8 @@ public class LoadDocument {
       }
       return docSource;
     } catch (Exception e) {
-      logger.error("{} Exception during extraction {} ", PdfToolbox.getLogSignature(subFunction), e);
-      throw new ConnectorException(ERROR_LOAD_DOCSOURCE, "Error " + e);
+      logger.error("{} Exception load [{}] : {} ", PdfToolbox.getLogSignature(subFunction), docReference, e);
+      throw new ConnectorException(ERROR_LOAD_DOCSOURCE, "DocReference["+docReference+"] Error : " + e);
     }
   }
 

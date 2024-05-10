@@ -105,6 +105,9 @@ public class PdfToImageFunction implements PdfSubFunction {
             timeStep3WriteFile - timeStep2WriteToByte, imageData.length / 1024); // Save Image
       } // end loop each page
       return pdfOutput;
+    } catch (ConnectorException ce) {
+      // already logged
+      throw ce;
     } catch (Exception e) {
       logger.error("{} During operation : ",  PdfToolbox.getLogSignature(this), e);
       throw new ConnectorException(PdfToolbox.ERROR_DURING_OPERATION, "Error " + e);

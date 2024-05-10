@@ -8,13 +8,12 @@ To test it:
 Check the file src/test/resources/application.yaml and set up the configuration to connect a Zeebe server
 
 ## Deploy the process
-Deploy the PdfOperation.bpmn process
+Deploy the officeToPdf.bpmn process
 
-
-![PdfOperations](PdfOperations.png)
+![OfficeToPdf.bpmn](officeToPdf.png)
 
 ## Start the LocalConnectorRuntime
-Source is located io.camunda.pdf.LocalConnectorRuntime. Start it.
+Source is located io.camunda.officetopdf.LocalConnectorRuntime. Start it.
 
 
 ## Create a process instance
@@ -23,15 +22,17 @@ PDF are saved in the temporary folder of the machine.
 
 
 ## Information
-The connector load different PDF file from Internet
+The connector load a WORD and a OPENOFFICE file from Internet
 
 The Source File is :
 `````json
 {
   "storageDefinition": "URL", 
-  "content": "https://github.com/camunda-community-hub/camunda-8-connector-pdf/raw/main/src/test/resources/BPMN%202.0%20Symbols.pdf"
+  "content": "https://github.com/pierre-yves-monnet/camunda-8-connector-officetopdf/raw/a51fc1b29add729087936eb0460b028ba8b5e977/src/test/resources/OfficeToPdfExample.docx"
 }
 `````
 
-Differnt PDF are created and saved in the TEMP Folder on the runtime (so not very easy to access). 
+A PDF is created and saved in the TEMP Folder on the runtime (so not very easy to access), 
+it depend where you run the LocalConnectorRuntime
+
 Check if you see any errors.

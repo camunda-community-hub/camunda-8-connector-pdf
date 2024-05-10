@@ -1,4 +1,4 @@
-package io.camunda.connector.pdf.mergedocument;
+package io.camunda.connector.pdf.mergepdf;
 
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
@@ -26,10 +26,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PdfMergeDocumentFunction implements PdfSubFunction {
+public class PdfMergePdfFunction implements PdfSubFunction {
   public static final String ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE = "ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE";
 
-  Logger logger = LoggerFactory.getLogger(PdfMergeDocumentFunction.class.getName());
+  Logger logger = LoggerFactory.getLogger(PdfMergePdfFunction.class.getName());
 
   /**
    * Execute the subfonction
@@ -101,6 +101,9 @@ public class PdfMergeDocumentFunction implements PdfSubFunction {
       logger.info("{} merge {} pages from {} documents to [{}]", PdfToolbox.getLogSignature(this), nbPagesMerged,
           fileVariableReferenceList.size(), destinationFileName);
       return pdfOutput;
+    } catch (ConnectorException ce) {
+      // already logged
+      throw ce;
     } catch (Exception e) {
       logger.error("{} Exception during merge {}", PdfToolbox.getLogSignature(this), e);
       throw new ConnectorException(PdfToolbox.ERROR_DURING_OPERATION, "Error " + e);
@@ -144,11 +147,11 @@ public class PdfMergeDocumentFunction implements PdfSubFunction {
 
   @Override
   public String getSubFunctionType() {
-    return "merge-documents";
+    return "merge-pdfs";
   }
 
   public String getSubFunctionDescription() {
-    return "Merge two PDF documents in one PDF";
+    return "Merge two PDFs document in one PDF";
   }
 
   private static final Map<String, String> listBpmnErrors = new HashMap<>();

@@ -22,7 +22,7 @@ public class SavePdfDocument {
   private static final String ERROR_CREATE_FILEVARIABLE = "ERROR_CREATE_FILEVARIABLE";
   private static final String ERROR_CREATE_FILEVARIABLE_LABEL = "Error when reading the PDF to create a fileVariable to save";
   private static final String ERROR_SAVE_ERROR = "SAVE_ERROR";
-  private static final String ERROR_SAVE_ERROR_LABEL = "An error occure during the save";
+  private static final String ERROR_SAVE_ERROR_LABEL = "An error occurs during the save";
 
   /**
    * Toolbox, only static method

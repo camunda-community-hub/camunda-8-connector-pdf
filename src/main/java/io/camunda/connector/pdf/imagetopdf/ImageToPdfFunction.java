@@ -36,7 +36,7 @@ import java.util.Map;
 public class ImageToPdfFunction implements PdfSubFunction {
   public static final String ERROR_ACCESS_SOURCE_IMAGE = "ACCESS_SOURCE_IMAGE";
   public static final String ERROR_DRAW_IMAGE = "DRAW_IMAGE";
-  public static final String ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE = "ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE";
+  public static final String ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE = "NO_DESTINATION_STORAGE_DEFINITION";
   public static final String ERROR_DEFINITION_ERROR = "DEFINITION_ERROR";
 
   Logger logger = LoggerFactory.getLogger(ImageToPdfFunction.class.getName());
@@ -136,7 +136,7 @@ public class ImageToPdfFunction implements PdfSubFunction {
 
       String destinationFileName = pdfInput.getDestinationFileName();
       String destinationStorageDefinitionSt = pdfInput.getDestinationStorageDefinition();
-      StorageDefinition destinationStorageDefinition=null;
+      StorageDefinition destinationStorageDefinition = null;
 
       if (destinationStorageDefinitionSt != null && !destinationStorageDefinitionSt.trim().isEmpty()) {
         try {
@@ -165,6 +165,9 @@ public class ImageToPdfFunction implements PdfSubFunction {
       logger.info("{}  {} image pages generated to document[{}]", PdfToolbox.getLogSignature(this), pageNumber,
           destinationFileName);
       return pdfOutput;
+    } catch (ConnectorException ce) {
+      // already logged
+      throw ce;
     } catch (Exception e) {
       logger.error("{} during ImageToPdf {}", PdfToolbox.getLogSignature(this), e);
       throw new ConnectorException(PdfToolbox.ERROR_DURING_OPERATION, "Error " + e);

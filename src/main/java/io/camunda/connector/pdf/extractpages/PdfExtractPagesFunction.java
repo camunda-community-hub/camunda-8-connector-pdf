@@ -91,6 +91,9 @@ public class PdfExtractPagesFunction implements PdfSubFunction {
       logger.info("{} Extract {} pages from document[{}] to [{}]", PdfToolbox.getLogSignature(this), nbPagesExtracted,
           docSource.getName(), destinationFileName);
       return pdfOutput;
+    } catch (ConnectorException ce) {
+      // already logged
+      throw ce;
     } catch (Exception e) {
       logger.error("{} Exception during extraction {} ", PdfToolbox.getLogSignature(this), e);
       throw new ConnectorException(ERROR_EXTRACTION_ERROR, "Error " + e);

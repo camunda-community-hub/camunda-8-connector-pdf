@@ -18,8 +18,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class PdfToolbox {
-  public static final String ERROR_DURING_OPERATION = "ERROR_DURING_OPERATION";
-  public static final String ERROR_DURING_OPERATION_LABEL = "An error occur during the operation";
+  public static final String ERROR_DURING_OPERATION = "OPERATION_FAILED";
+  public static final String ERROR_DURING_OPERATION_LABEL = "An error occurred during the operation";
 
   private static final Logger logger = LoggerFactory.getLogger(PdfToolbox.class.getName());
 
