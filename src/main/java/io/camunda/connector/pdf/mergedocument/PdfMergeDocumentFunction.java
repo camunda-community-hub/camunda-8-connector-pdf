@@ -1,12 +1,16 @@
 package io.camunda.connector.pdf.mergedocument;
 
-import io.camunda.connector.api.annotation.OutboundConnector;
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
-import io.camunda.connector.api.outbound.OutboundConnectorFunction;
-import io.camunda.connector.cherrytemplate.CherryConnector;
-import io.camunda.connector.pdf.extractpages.PdfExtractPagesInput;
-import io.camunda.connector.pdf.extractpages.PdfExtractPagesOutput;
+import io.camunda.connector.cherrytemplate.CherryInput;
+import io.camunda.connector.pdf.PdfInput;
+import io.camunda.connector.pdf.PdfOutput;
+import io.camunda.connector.pdf.sharedfunctions.LoadDocument;
+import io.camunda.connector.pdf.sharedfunctions.LoadPdfDocument;
+import io.camunda.connector.pdf.sharedfunctions.RetrieveStorageDefinition;
+import io.camunda.connector.pdf.sharedfunctions.SavePdfDocument;
+import io.camunda.connector.pdf.toolbox.PdfParameter;
+import io.camunda.connector.pdf.toolbox.PdfSubFunction;
 import io.camunda.connector.pdf.toolbox.PdfToolbox;
 import io.camunda.filestorage.FileRepoFactory;
 import io.camunda.filestorage.FileVariable;
@@ -16,180 +20,151 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@OutboundConnector(name = PdfMergeDocumentFunction.TYPE_PDF_EXTRACTPAGES, inputVariables = {
-    PdfMergeDocumentInput.INPUT_SOURCE_FILE, // reference to the source file, first page to add
-    PdfMergeDocumentInput.INPUT_FILE_TO_ADD, // reference to the second source file
-    PdfMergeDocumentInput.INPUT_DESTINATION_FILE_NAME,
-    PdfMergeDocumentInput.INPUT_DESTINATION_STORAGEDEFINITION }, type = PdfMergeDocumentFunction.TYPE_PDF_EXTRACTPAGES)
+public class PdfMergeDocumentFunction implements PdfSubFunction {
+  public static final String ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE = "ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE";
 
-public class PdfMergeDocumentFunction implements OutboundConnectorFunction, CherryConnector {
-  public static final String ERROR_MERGE_ERROR = "MERGE_ERROR";
-  public static final String ERROR_DEFINITION_ERROR = "DEFINITION_ERROR";
-  public static final String TYPE_PDF_EXTRACTPAGES = "c-pdf-mergepages";
   Logger logger = LoggerFactory.getLogger(PdfMergeDocumentFunction.class.getName());
 
-  @Override
-  public PdfMergeDocumentOutput execute(OutboundConnectorContext context) throws Exception {
-    PdfMergeDocumentInput pdfExtractPagesInput = context.bindVariables(PdfMergeDocumentInput.class);
+  /**
+   * Execute the subfonction
+   *
+   * @param pdfInput                 the input of connector
+   * @param outboundConnectorContext outbound connector execution
+   * @return an Output object
+   * @throws ConnectorException in case of any error
+   */
+  public PdfOutput executeSubFunction(PdfInput pdfInput, OutboundConnectorContext outboundConnectorContext)
+      throws ConnectorException {
+    logger.debug("{} Start MergeDocument", PdfToolbox.getLogSignature(this));
+
     FileRepoFactory fileRepoFactory = FileRepoFactory.getInstance();
 
-    FileVariableReference docSourceReference;
-    FileVariableReference docFileToAddReference;
-    PDDocument docSourcePDF = null;
-    PDDocument docFileToAddPDF = null;
     PDDocument destinationDocument = null;
-
-    int nbPagesExtracted = 0;
-    logger.info("{} SourceDocument=[{}] AddDocument[{}] ", getLogSignature(), pdfExtractPagesInput.getSourceFile(),
-        pdfExtractPagesInput.getFileToAdd());
+    // PDF Library oblige to keep all documents open until we write the destinationDocument. So, keep it here, and close all at the end
+    List<PDDocument> sourceDocumentsList = new ArrayList<>();
 
     try {
-      docSourceReference = FileVariableReference.fromJson(pdfExtractPagesInput.getSourceFile());
-      FileVariable docSource = fileRepoFactory.loadFileVariable(docSourceReference);
+      List<FileVariableReference> fileVariableReferenceList = new ArrayList<>();
 
-      docFileToAddReference = FileVariableReference.fromJson(pdfExtractPagesInput.getFileToAdd());
-      FileVariable docFileToAdd = fileRepoFactory.loadFileVariable(docFileToAddReference);
+      List<String> referenceDocSource = pdfInput.getListSourceFile();
+      logger.info("{} Start MergeDocument {} documents", PdfToolbox.getLogSignature(this), referenceDocSource.size());
 
-      String destinationFileName = pdfExtractPagesInput.getDestinationFileName();
-      String destinationStorageDefinitionSt = pdfExtractPagesInput.getDestinationStorageDefinition();
-      // get the file
-
-      if (docSource == null || docSource.getValue() == null) {
-        throw new ConnectorException(PdfToolbox.ERROR_LOAD_ERROR,
-            getLogSignature() + "Can't read file [" + pdfExtractPagesInput.getSourceFile() + "]");
-      }
-      if (docFileToAdd == null || docFileToAdd.getValue() == null) {
-        throw new ConnectorException(PdfToolbox.ERROR_LOAD_ERROR,
-            getLogSignature() + "Can't read file [" + pdfExtractPagesInput.getFileToAdd() + "]");
+      for (String reference : referenceDocSource) {
+        fileVariableReferenceList.add(FileVariableReference.fromJson(reference));
       }
 
-      StorageDefinition destinationStorageDefinition;
-      if (destinationStorageDefinitionSt != null && !destinationStorageDefinitionSt.trim().isEmpty()) {
-        try {
-          destinationStorageDefinition = StorageDefinition.getFromString(destinationStorageDefinitionSt);
-        } catch (Exception e) {
-          throw new ConnectorException(ERROR_DEFINITION_ERROR,
-              getLogSignature() + "Can't decode StorageDefinition [" + destinationStorageDefinitionSt + "]");
-        }
-      } else {
-        destinationStorageDefinition = docSource.getStorageDefinition();
-      }
+      String destinationFileName = pdfInput.getDestinationFileName();
+      StorageDefinition destinationStorageDefinition = RetrieveStorageDefinition.getStorageDefinition(pdfInput, null,
+          false, this);
 
-      docSourcePDF = PdfToolbox.loadPdfDocument(docSource, getName());
-
-      if (docSourcePDF.isEncrypted()) {
-        throw new ConnectorException(PdfToolbox.ERROR_ENCRYPTED_PDF_NOT_SUPPORTED,
-            getLogSignature() + "Document [" + pdfExtractPagesInput.getSourceFile() + "] is encrypted");
-      }
-      docFileToAddPDF = PdfToolbox.loadPdfDocument(docFileToAdd, getName());
-      if (docFileToAddPDF.isEncrypted()) {
-        throw new ConnectorException(PdfToolbox.ERROR_ENCRYPTED_PDF_NOT_SUPPORTED,
-            getLogSignature() + "Document [" + pdfExtractPagesInput.getFileToAdd() + "] is encrypted");
-      }
+      // Merge
+      int nbPagesMerged = 0;
       destinationDocument = new PDDocument();
 
-      // add all pages from sources
-      for (int pageIndex = 0; pageIndex < docSourcePDF.getNumberOfPages(); pageIndex++) {
-        // getPage starts at 0, pageIndex start at 1
-        destinationDocument.addPage(docSourcePDF.getPage(pageIndex));
+      for (FileVariableReference fileVariableReference : fileVariableReferenceList) {
+        FileVariable docFileToAdd = LoadDocument.loadDocSourceFromReference(fileVariableReference, fileRepoFactory,
+            this);
+
+        if (destinationStorageDefinition == null)
+          destinationStorageDefinition = docFileToAdd.getStorageDefinition();
+
+        PDDocument docSourcePDF = LoadPdfDocument.loadPdfDocument(docFileToAdd, this);
+        sourceDocumentsList.add(docSourcePDF);
+
+        // add all pages from sources
+        for (int pageIndex = 0; pageIndex < docSourcePDF.getNumberOfPages(); pageIndex++) {
+          // getPage starts at 0, pageIndex start at 1
+          destinationDocument.addPage(docSourcePDF.getPage(pageIndex));
+          nbPagesMerged++;
+        }
+      } // end merge
+
+      // if the destination is null here, there is a issue
+      if (destinationStorageDefinition == null) {
+        // no storage : this is a problem
+        logger.error("{} no destination storage definition defined ", PdfToolbox.getLogSignature(this));
+        throw new ConnectorException(ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE);
+
       }
 
-      // add all pages from addPages
-      for (int pageIndex = 0; pageIndex < docFileToAddPDF.getNumberOfPages(); pageIndex++) {
-        // getPage starts at 0, pageIndex start at 1
-        destinationDocument.addPage(docFileToAddPDF.getPage(pageIndex));
-      }
+      // produce the result, and save it in the pdfOutput
+      // Exception PdfToolbox.ERROR_CREATE_FILEVARIABLE, PdfToolbox.ERROR_SAVE_ERROR
+      PdfOutput pdfOutput = SavePdfDocument.savePdfFile(new PdfOutput(), destinationDocument, destinationFileName,
+          destinationStorageDefinition, fileRepoFactory, this);
 
-      FileVariable outputFileVariable = PdfToolbox.saveOutputPdfDocument(destinationDocument, destinationFileName,
-          destinationStorageDefinition, getName());
-      PdfMergeDocumentOutput pdfExtractPagesOutput = new PdfMergeDocumentOutput();
-      try {
-        FileVariableReference outputFileReference = fileRepoFactory.saveFileVariable(outputFileVariable);
-        pdfExtractPagesOutput.destinationFile = outputFileReference.toJson();
-      } catch (Exception e) {
-        throw new ConnectorException(PdfToolbox.ERROR_SAVE_ERROR, "Error " + e);
-      }
-
-      logger.info("{} extract {} page from document[{}] ({} pages): add {} pages from document[{}] to [{}]",
-          getLogSignature(),
-          nbPagesExtracted,
-          docSource.getName(),
-          docSourcePDF.getNumberOfPages(),
-          docFileToAddPDF.getNumberOfPages(),
-          docFileToAdd.getName(),
-           destinationFileName );
-      return pdfExtractPagesOutput;
+      logger.info("{} merge {} pages from {} documents to [{}]", PdfToolbox.getLogSignature(this), nbPagesMerged,
+          fileVariableReferenceList.size(), destinationFileName);
+      return pdfOutput;
     } catch (Exception e) {
-      logger.error("{} Exception during merge {}", getLogSignature(), e);
-      throw new ConnectorException(ERROR_MERGE_ERROR, "Error " + e);
+      logger.error("{} Exception during merge {}", PdfToolbox.getLogSignature(this), e);
+      throw new ConnectorException(PdfToolbox.ERROR_DURING_OPERATION, "Error " + e);
     } finally {
-      if (docSourcePDF != null)
-        try {
-          docSourcePDF.close();
-        } catch (Exception e) {
-          // don't care
-        }
-      if (docFileToAddPDF != null)
-        try {
-          docFileToAddPDF.close();
-        } catch (Exception e) {
-          // don't care
-        }
       if (destinationDocument != null) {
         try {
           destinationDocument.close();
         } catch (Exception e) {
           // don't care
         }
-
+        for (PDDocument doc : sourceDocumentsList) {
+          try {
+            doc.close();
+          } catch (Exception e) {
+            // don't care
+          }
+        }
       }
     } // end finally
 
   }
 
-  public String getName() {
-    return "PDF Merge document";
+  public List<PdfParameter> getSubFunctionParameters(TypeParameter typeParameter) {
+    if (typeParameter.equals(TypeParameter.INPUT)) {
+
+      return Arrays.asList(new PdfParameter(PdfInput.INPUT_LIST_SOURCE_FILE, // name
+              "List source file", // label
+              List.class, // class
+              CherryInput.PARAMETER_MAP_LEVEL_OPTIONAL, // level
+              "List of FileVariable for the file to convert", 1),
+
+          PdfInput.pdfParameterDestinationFileName, PdfInput.pdfParameterDestinationStorageDefinition);
+    } else {
+      return List.of(PdfOutput.PDF_PARAMETER_DESTINATION_FILE);
+    }
   }
 
-  private String getLogSignature() {
-    return "Connector [" + getName() + "]:";
-  }
-
-  @Override
-  public String getDescription() {
-    return null;
-  }
-
-  @Override
-  public String getLogo() {
-    return PdfToolbox.getLogo();
-  }
-
-  @Override
-  public String getCollectionName() {
-    return PdfToolbox.getCollectionName();
+  public String getSubFunctionName() {
+    return "Merge documents";
   }
 
   @Override
-  public Map<String, String> getListBpmnErrors() {
-    return null;
+  public String getSubFunctionType() {
+    return "merge-documents";
   }
 
-  @Override
-  public Class<PdfExtractPagesInput> getInputParameterClass() {
-    return null;
+  public String getSubFunctionDescription() {
+    return "Merge two PDF documents in one PDF";
   }
 
-  @Override
-  public Class<PdfExtractPagesOutput> getOutputParameterClass() {
-    return null;
+  private static final Map<String, String> listBpmnErrors = new HashMap<>();
+
+  static {
+    listBpmnErrors.putAll(LoadDocument.getBpmnErrors());
+    listBpmnErrors.putAll(RetrieveStorageDefinition.getBpmnErrors());
+    listBpmnErrors.putAll(LoadPdfDocument.getBpmnErrors());
+    listBpmnErrors.putAll(SavePdfDocument.getBpmnErrors());
+    listBpmnErrors.put(PdfToolbox.ERROR_DURING_OPERATION, PdfToolbox.ERROR_DURING_OPERATION);
+    listBpmnErrors.put(ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE,
+        "A storage definition must be set to store the result document");
   }
 
-  @Override
-  public List<String> appliesTo() {
-    return null;
+  public Map<String, String> getSubFunctionListBpmnErrors() {
+    return listBpmnErrors;
   }
+
 }

@@ -1,19 +1,28 @@
 package io.camunda.connector.pdf.extractpages;
 
-import io.camunda.connector.api.annotation.OutboundConnector;
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
-import io.camunda.connector.api.outbound.OutboundConnectorFunction;
-import io.camunda.connector.cherrytemplate.CherryConnector;
+import io.camunda.connector.cherrytemplate.CherryInput;
+import io.camunda.connector.pdf.PdfInput;
+import io.camunda.connector.pdf.PdfOutput;
+import io.camunda.connector.pdf.sharedfunctions.LoadDocument;
+import io.camunda.connector.pdf.sharedfunctions.LoadPdfDocument;
+import io.camunda.connector.pdf.sharedfunctions.RetrieveStorageDefinition;
+import io.camunda.connector.pdf.sharedfunctions.SavePdfDocument;
+import io.camunda.connector.pdf.toolbox.ExtractPageExpression;
+import io.camunda.connector.pdf.toolbox.PdfParameter;
+import io.camunda.connector.pdf.toolbox.PdfSubFunction;
 import io.camunda.connector.pdf.toolbox.PdfToolbox;
 import io.camunda.filestorage.FileRepoFactory;
 import io.camunda.filestorage.FileVariable;
-import io.camunda.filestorage.FileVariableReference;
 import io.camunda.filestorage.StorageDefinition;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,104 +33,66 @@ import java.util.Map;
  * "2-n" pages 2 up to the end
  * "2-6,8,10-12,14-n" multiple expressions are accepted, separated by a comma
  */
-@OutboundConnector(name = PdfExtractPagesFunction.TYPE_PDF_EXTRACTPAGES, inputVariables = {
-    PdfExtractPagesInput.INPUT_SOURCE_FILE, PdfExtractPagesInput.INPUT_EXTRACT_EXPRESSION,
-    PdfExtractPagesInput.INPUT_DESTINATION_FILE_NAME,
-    PdfExtractPagesInput.INPUT_DESTINATION_STORAGEDEFINITION }, type = PdfExtractPagesFunction.TYPE_PDF_EXTRACTPAGES)
 
-public class PdfExtractPagesFunction implements OutboundConnectorFunction, CherryConnector {
-  public static final String ERROR_INVALID_EXPRESSION = "INVALID_EXPRESSION";
+public class PdfExtractPagesFunction implements PdfSubFunction {
   public static final String ERROR_EXTRACTION_ERROR = "EXTRACTION_ERROR";
-  public static final String ERROR_DEFINITION_ERROR = "DEFINITION_ERROR";
-  public static final String TYPE_PDF_EXTRACTPAGES = "c-pdf-extractpages";
+
   Logger logger = LoggerFactory.getLogger(PdfExtractPagesFunction.class.getName());
 
-  @Override
-  public PdfExtractPagesOutput execute(OutboundConnectorContext context) throws Exception {
-    PdfExtractPagesInput pdfExtractPagesInput = context.bindVariables(PdfExtractPagesInput.class);
+  public static String getDescription() {
+    return "Extract pages from a PDF. A String pilot the extraction, to get the list of page to extract";
+  }
+
+  /**
+   * @param pdfInput                 input of connector
+   * @param outboundConnectorContext context of onnector
+   * @return the output
+   * @throws Exception for any error
+   */
+  public PdfOutput executeSubFunction(PdfInput pdfInput, OutboundConnectorContext outboundConnectorContext)
+      throws ConnectorException {
+    logger.debug("{} Start ExtractPages", PdfToolbox.getLogSignature(this));
+
     FileRepoFactory fileRepoFactory = FileRepoFactory.getInstance();
-    FileVariableReference docSourceReference;
     PDDocument sourceDocument = null;
     PDDocument destinationDocument = null;
-    String extractExpression = pdfExtractPagesInput.getExtractExpression();
+    String extractExpression = pdfInput.getExtractExpression();
 
     int nbPagesExtracted = 0;
-    logger.info("{} sourceDocument=[{}] extract[{}] ", getLogSignature(), pdfExtractPagesInput.getSourceFile(),
-        extractExpression);
+    logger.info("{} Start ExtractPages sourceDocument=[{}] extract[{}] ", PdfToolbox.getLogSignature(this),
+        pdfInput.getSourceFile(), extractExpression);
 
     try {
-      docSourceReference = FileVariableReference.fromJson(pdfExtractPagesInput.getSourceFile());
-      FileVariable docSource = fileRepoFactory.loadFileVariable(docSourceReference);
+      FileVariable docSource = LoadDocument.loadDocSource(pdfInput.getSourceFile(), fileRepoFactory, this);
 
-      String destinationFileName = pdfExtractPagesInput.getDestinationFileName();
-      String destinationStorageDefinitionSt = pdfExtractPagesInput.getDestinationStorageDefinition();
-      // get the file
-      if (docSource == null || docSource.getValue() == null) {
-        throw new ConnectorException(PdfToolbox.ERROR_LOAD_ERROR,
-            getLogSignature() + "Can't read file [" + pdfExtractPagesInput.getSourceFile() + "]");
-      }
+      String destinationFileName = pdfInput.getDestinationFileName();
 
-      StorageDefinition destinationStorageDefinition;
-      if (destinationStorageDefinitionSt != null && !destinationStorageDefinitionSt.trim().isEmpty()) {
-        try {
-          destinationStorageDefinition = StorageDefinition.getFromString(destinationStorageDefinitionSt);
-        } catch (Exception e) {
-          throw new ConnectorException(ERROR_DEFINITION_ERROR,
-              getLogSignature() + "Can't decode StorageDefinition [" + destinationStorageDefinitionSt + "]");
-        }
-      } else {
-        destinationStorageDefinition = docSource.getStorageDefinition();
-      }
+      StorageDefinition destinationStorageDefinition = RetrieveStorageDefinition.getStorageDefinition(pdfInput,
+          docSource, true, this);
 
-      sourceDocument = PdfToolbox.loadPdfDocument(docSource, getName());
+      sourceDocument = LoadPdfDocument.loadPdfDocument(docSource, this);
 
-      if (sourceDocument.isEncrypted()) {
-        throw new ConnectorException(PdfToolbox.ERROR_ENCRYPTED_PDF_NOT_SUPPORTED,
-            getLogSignature() + "Document is encrypted");
-      }
       destinationDocument = new PDDocument();
-      // replace any "n" information in the expression by the number of page
-      String extractExpressionResolved = extractExpression.replace("n",
-          String.valueOf(sourceDocument.getNumberOfPages()));
-      String[] expressionsList = extractExpressionResolved.split(",", 0);
-      for (String oneExpression : expressionsList) {
-        int firstPage;
-        int lastPage;
-        // format must be <number1>-<number2> where number1<=number2
-        try {
-          String[] expressionDetail = oneExpression.split("-", 2);
-          firstPage = expressionDetail.length >= 1 ? Integer.parseInt(expressionDetail[0]) : -1;
-          lastPage = expressionDetail.length >= 2 ? Integer.parseInt(expressionDetail[1]) : firstPage;
+      ExtractPageExpression extractPageExpression = new ExtractPageExpression(extractExpression, sourceDocument, this);
 
-          if (firstPage == -1 || lastPage == -1 || firstPage > lastPage)
-            throw new ConnectorException(ERROR_INVALID_EXPRESSION,
-                getLogSignature() + "Expression is <firstPage>-<lastPage> where firstPage<=lastPage :" + firstPage + ","
-                    + lastPage);
-        } catch (Exception e) {
-          throw new ConnectorException(ERROR_INVALID_EXPRESSION,
-              getLogSignature() + "Expression must be <firstPage>-<lastPage> : received[" + oneExpression + "] " + e);
+      // Loop on each page
+      for (int pageIndex = 1; pageIndex <= sourceDocument.getNumberOfPages(); pageIndex++)
+        if (extractPageExpression.isPageInRange(pageIndex)) {
+          // getPage starts at 0, pageIndex start at 1
+          destinationDocument.addPage(sourceDocument.getPage(pageIndex - 1));
+          nbPagesExtracted++;
         }
-        for (int pageIndex = firstPage; pageIndex <= lastPage; pageIndex++) {
-          if (pageIndex <= sourceDocument.getNumberOfPages()) {
-            // getPage starts at 0, pageIndex start at 1
-            destinationDocument.addPage(sourceDocument.getPage(pageIndex - 1));
-            nbPagesExtracted++;
-          }
-        }
-      }
 
-      FileVariable outputFileVariable = PdfToolbox.saveOutputPdfDocument(destinationDocument, destinationFileName,
-          destinationStorageDefinition, getName());
-      FileVariableReference outputFileReference = fileRepoFactory.saveFileVariable(outputFileVariable);
+      // produce the result, and save it in the pdfOutput
+      // Exception PdfToolbox.ERROR_CREATE_FILEVARIABLE, PdfToolbox.ERROR_SAVE_ERROR
+      PdfOutput pdfOutput = SavePdfDocument.savePdfFile(new PdfOutput(), destinationDocument, destinationFileName,
+          destinationStorageDefinition, fileRepoFactory, this);
 
-      PdfExtractPagesOutput pdfExtractPagesOutput = new PdfExtractPagesOutput();
-      pdfExtractPagesOutput.destinationFile = outputFileReference.toJson();
-
-      logger.info("{} Extract {} pages from document[{}] to [{}]", getLogSignature(), nbPagesExtracted,
+      logger.info("{} Extract {} pages from document[{}] to [{}]", PdfToolbox.getLogSignature(this), nbPagesExtracted,
           docSource.getName(), destinationFileName);
-      return pdfExtractPagesOutput;
+      return pdfOutput;
     } catch (Exception e) {
-      logger.error("{} Exception during extraction {} ", getLogSignature(), e);
+      logger.error("{} Exception during extraction {} ", PdfToolbox.getLogSignature(this), e);
       throw new ConnectorException(ERROR_EXTRACTION_ERROR, "Error " + e);
     } finally {
       if (sourceDocument != null)
@@ -142,48 +113,57 @@ public class PdfExtractPagesFunction implements OutboundConnectorFunction, Cherr
 
   }
 
-  public String getName() {
-    return "PDF Extract pages";
-  }
-
-  private String getLogSignature() {
-    return "Connector [" + getName() + "]:";
+  public String getSubFunctionName() {
+    return "Extract pages";
   }
 
   @Override
-  public String getDescription() {
-    return "Extract pages from a PDF. A String pilot the extraction, to get the list of page to extract";
+  public String getSubFunctionDescription() {
+    return "Extract pages in a PDF, and produce a PDF";
   }
 
   @Override
-  public String getLogo() {
-    return PdfToolbox.getLogo();
+  public String getSubFunctionType() {
+    return "extract-pages";
   }
 
-  @Override
-  public String getCollectionName() {
-    return PdfToolbox.getCollectionName();
+  private static final Map<String, String> listBpmnErrors = new HashMap<>();
+
+  static {
+    listBpmnErrors.putAll(LoadDocument.getBpmnErrors());
+    listBpmnErrors.putAll(RetrieveStorageDefinition.getBpmnErrors());
+    listBpmnErrors.putAll(LoadPdfDocument.getBpmnErrors());
+    listBpmnErrors.putAll(SavePdfDocument.getBpmnErrors());
+    listBpmnErrors.putAll(ExtractPageExpression.getBpmnErrorExtractExpression());
+    listBpmnErrors.put(ERROR_EXTRACTION_ERROR, "Extraction error");
   }
 
-  @Override
-  public Map<String, String> getListBpmnErrors() {
-    return Map.of(ERROR_INVALID_EXPRESSION, "Invalid expression to pilot the extraction", ERROR_EXTRACTION_ERROR,
-        "Extraction error", ERROR_DEFINITION_ERROR, "Definition error");
-
+  public Map<String, String> getSubFunctionListBpmnErrors() {
+    return listBpmnErrors;
   }
 
-  @Override
-  public Class<PdfExtractPagesInput> getInputParameterClass() {
-    return PdfExtractPagesInput.class;
+  public List<PdfParameter> getSubFunctionParameters(TypeParameter typeParameter) {
+    switch (typeParameter) {
+    case INPUT:
+      return Arrays.asList(new PdfParameter(PdfInput.INPUT_SOURCE_FILE, // name
+              "Source file", // label
+              Object.class, // class
+              CherryInput.PARAMETER_MAP_LEVEL_REQUIRED, // level
+              "FileVariable for the file to convert", 1),
+
+          new PdfParameter(PdfInput.INPUT_EXTRACT_EXPRESSION, // name
+              "Extract Expression", // label
+              String.class, // class
+              CherryInput.PARAMETER_MAP_LEVEL_REQUIRED, // level
+              "Extract pilot: example, 2-4 mean extract pages 2 to 4 (document page start at 1). Use \u0027n\u0027 to specify the end of the document (2-n) extract from page 2 to the end. Simple number is accepted to extract a page. Example: 4-5, 10, 15-n or 2-n, 1 (first page to the end)",
+              1),
+
+          PdfInput.pdfParameterDestinationFileName, PdfInput.pdfParameterDestinationStorageDefinition);
+
+    case OUTPUT:
+      return List.of(PdfOutput.PDF_PARAMETER_DESTINATION_FILE);
+    }
+    return Collections.emptyList();
   }
 
-  @Override
-  public Class<PdfExtractPagesOutput> getOutputParameterClass() {
-    return PdfExtractPagesOutput.class;
-  }
-
-  @Override
-  public List<String> appliesTo() {
-    return List.of("bpmn:Task");
-  }
 }

@@ -10,9 +10,6 @@ package io.camunda.connector.cherrytemplate;
 /*  the connector                                                       */
 /* ******************************************************************** */
 
-import io.camunda.connector.pdf.extractpages.PdfExtractPagesInput;
-import io.camunda.connector.pdf.extractpages.PdfExtractPagesOutput;
-
 import java.util.List;
 import java.util.Map;
 
@@ -50,14 +47,14 @@ public interface CherryConnector {
    *
    * @return a CherryInput class
    */
-  Class<PdfExtractPagesInput> getInputParameterClass();
+  Class<?> getInputParameterClass();
 
   /**
    * return a CherryOutput class to describe the output
    *
    * @return a CherryOutput class
    */
-  Class<PdfExtractPagesOutput> getOutputParameterClass();
+  Class<?> getOutputParameterClass();
 
   /**
    * on which BPMN item this event can apply. Return a list like
@@ -67,5 +64,5 @@ public interface CherryConnector {
    *
    * @return list of bpmn item
    */
-  List<String> appliesTo();
+  List<String> getAppliesTo();
 }
