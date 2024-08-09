@@ -28,6 +28,17 @@ import java.util.Map;
 
 public class PdfMergePdfFunction implements PdfSubFunction {
   public static final String ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE = "ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE";
+  private static final Map<String, String> listBpmnErrors = new HashMap<>();
+
+  static {
+    listBpmnErrors.putAll(LoadDocument.getBpmnErrors());
+    listBpmnErrors.putAll(RetrieveStorageDefinition.getBpmnErrors());
+    listBpmnErrors.putAll(LoadPdfDocument.getBpmnErrors());
+    listBpmnErrors.putAll(SavePdfDocument.getBpmnErrors());
+    listBpmnErrors.put(PdfToolbox.ERROR_DURING_OPERATION, PdfToolbox.ERROR_DURING_OPERATION);
+    listBpmnErrors.put(ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE,
+        "A storage definition must be set to store the result document");
+  }
 
   Logger logger = LoggerFactory.getLogger(PdfMergePdfFunction.class.getName());
 
@@ -152,18 +163,6 @@ public class PdfMergePdfFunction implements PdfSubFunction {
 
   public String getSubFunctionDescription() {
     return "Merge two PDFs document in one PDF";
-  }
-
-  private static final Map<String, String> listBpmnErrors = new HashMap<>();
-
-  static {
-    listBpmnErrors.putAll(LoadDocument.getBpmnErrors());
-    listBpmnErrors.putAll(RetrieveStorageDefinition.getBpmnErrors());
-    listBpmnErrors.putAll(LoadPdfDocument.getBpmnErrors());
-    listBpmnErrors.putAll(SavePdfDocument.getBpmnErrors());
-    listBpmnErrors.put(PdfToolbox.ERROR_DURING_OPERATION, PdfToolbox.ERROR_DURING_OPERATION);
-    listBpmnErrors.put(ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE,
-        "A storage definition must be set to store the result document");
   }
 
   public Map<String, String> getSubFunctionListBpmnErrors() {

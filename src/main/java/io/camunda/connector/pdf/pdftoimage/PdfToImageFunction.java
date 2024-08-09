@@ -34,12 +34,21 @@ import java.util.Map;
 public class PdfToImageFunction implements PdfSubFunction {
   public static final String ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE = "ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE";
   public static final String ERROR_DRAW_IMAGE = "ERROR_DRAW_IMAGE";
+  private static final Map<String, String> listBpmnErrors = new HashMap<>();
+
+  static {
+    listBpmnErrors.putAll(RetrieveStorageDefinition.getBpmnErrors());
+    listBpmnErrors.putAll(LoadDocument.getBpmnErrors());
+    listBpmnErrors.putAll(ExtractPageExpression.getBpmnErrorExtractExpression());
+    listBpmnErrors.putAll(SavePdfDocument.getBpmnErrors());
+    listBpmnErrors.put(PdfToolbox.ERROR_DURING_OPERATION, PdfToolbox.ERROR_DURING_OPERATION_LABEL);
+  }
+
   private final Logger logger = LoggerFactory.getLogger(PdfToImageFunction.class.getName());
 
   /**
-   *
    * @param pdfInput input
-   * @param context context of the task
+   * @param context  context of the task
    * @return the output
    * @throws ConnectorException in case of any error
    */
@@ -49,7 +58,6 @@ public class PdfToImageFunction implements PdfSubFunction {
     logger.debug("{} Start PdfToImages", PdfToolbox.getLogSignature(this));
 
     FileRepoFactory fileRepoFactory = FileRepoFactory.getInstance();
-    FileVariableReference docSourceReference;
     PDDocument docSourcePDF = null;
 
     try {
@@ -109,14 +117,13 @@ public class PdfToImageFunction implements PdfSubFunction {
       // already logged
       throw ce;
     } catch (Exception e) {
-      logger.error("{} During operation : ",  PdfToolbox.getLogSignature(this), e);
+      logger.error("{} During operation : ", PdfToolbox.getLogSignature(this), e);
       throw new ConnectorException(PdfToolbox.ERROR_DURING_OPERATION, "Error " + e);
     } finally {
-      if (docSourcePDF!=null)
+      if (docSourcePDF != null)
         try {
           docSourcePDF.close();
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
           logger.error("{} During close document : {}", PdfToolbox.getLogSignature(this), e.getMessage());
         }
     }
@@ -154,17 +161,7 @@ public class PdfToImageFunction implements PdfSubFunction {
     return Collections.emptyList();
   }
 
-  private static final Map<String, String> listBpmnErrors = new HashMap<>();
-
-  static {
-    listBpmnErrors.putAll(RetrieveStorageDefinition.getBpmnErrors());
-    listBpmnErrors.putAll(LoadDocument.getBpmnErrors());
-    listBpmnErrors.putAll(ExtractPageExpression.getBpmnErrorExtractExpression());
-    listBpmnErrors.putAll(SavePdfDocument.getBpmnErrors());
-    listBpmnErrors.put(PdfToolbox.ERROR_DURING_OPERATION, PdfToolbox.ERROR_DURING_OPERATION_LABEL);
-  }
-
-    @Override
+  @Override
   public Map<String, String> getSubFunctionListBpmnErrors() {
     return listBpmnErrors;
   }

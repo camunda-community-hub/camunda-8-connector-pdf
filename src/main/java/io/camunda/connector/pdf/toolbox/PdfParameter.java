@@ -24,14 +24,19 @@ public class PdfParameter {
   private final List<String> listRegisteredType = new ArrayList<>();
 
   /**
-   * @param name name
-   * @param label label
+   * @param name           name
+   * @param label          label
    * @param classParameter class
-   * @param level level:  CherryInput.PARAMETER_MAP_LEVEL_REQUIRED or  CherryInput.PARAMETER_MAP_LEVEL_OPTIONAL
-   * @param explanation explanation
+   * @param level          level:  CherryInput.PARAMETER_MAP_LEVEL_REQUIRED or  CherryInput.PARAMETER_MAP_LEVEL_OPTIONAL
+   * @param explanation    explanation
    * @param priority       to order the parameters BETWEEN all functions, we use the priority field. Then, all priority
    */
-  public PdfParameter(String name, String label, Class<?> classParameter, String level, String explanation, int priority) {
+  public PdfParameter(String name,
+                      String label,
+                      Class<?> classParameter,
+                      String level,
+                      String explanation,
+                      int priority) {
     this.name = name;
     this.label = label;
     this.classParameter = classParameter;

@@ -73,11 +73,12 @@ public class SavePdfDocument {
       return pdfOutput;
     } catch (Exception e) {
       logger.error("{} Error during save to name[{}] StorageDefinition[{}] : {}",
-          PdfToolbox.getLogSignature(subFunction), fileVariableOut.getName(),
-          fileVariableOut.getStorageDefinition(), e.getMessage());
+          PdfToolbox.getLogSignature(subFunction), fileVariableOut.getName(), fileVariableOut.getStorageDefinition(),
+          e.getMessage());
 
       throw new ConnectorException(ERROR_SAVE_ERROR,
-          "Name [" + fileVariableOut.getName() + "] StorageDefinition [" + fileVariableOut.getStorageDefinition() + "] Error " + e);
+          "Name [" + fileVariableOut.getName() + "] StorageDefinition [" + fileVariableOut.getStorageDefinition()
+              + "] Error " + e);
     }
   }
 

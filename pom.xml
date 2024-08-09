@@ -8,8 +8,8 @@
   <packaging>jar</packaging>
   <!-- 1.1.2 -->
   <!-- 2.0.0 Move to 8.5.0/ only one connector with function -->
-
-  <version>2.0.1-SNAPSHOT</version>
+  <!-- 2.0.2 reformat the code -->
+  <version>2.0.2</version>
 
   <properties>
     <maven.compiler.release>17</maven.compiler.release>

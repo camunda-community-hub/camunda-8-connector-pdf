@@ -23,7 +23,9 @@ public class LoadDocument {
   /**
    * Toolbox, only static method
    */
-  private LoadDocument() {}
+  private LoadDocument() {
+  }
+
   /**
    * From a source file reference, load the FileVariable Doc Source
    *
@@ -41,8 +43,9 @@ public class LoadDocument {
     } catch (ConnectorException ce) {
       throw ce;
     } catch (Exception e) {
-      logger.error("{} Exception during extraction on sourceFile[{}] : {} ", PdfToolbox.getLogSignature(subFunction), sourceFile, e);
-      throw new ConnectorException(ERROR_LOAD_DOCSOURCE, "Document["+sourceFile+"] Error " + e);
+      logger.error("{} Exception during extraction on sourceFile[{}] : {} ", PdfToolbox.getLogSignature(subFunction),
+          sourceFile, e);
+      throw new ConnectorException(ERROR_LOAD_DOCSOURCE, "Document[" + sourceFile + "] Error " + e);
     }
   }
 
@@ -60,7 +63,7 @@ public class LoadDocument {
       return docSource;
     } catch (Exception e) {
       logger.error("{} Exception load [{}] : {} ", PdfToolbox.getLogSignature(subFunction), docReference, e);
-      throw new ConnectorException(ERROR_LOAD_DOCSOURCE, "DocReference["+docReference+"] Error : " + e);
+      throw new ConnectorException(ERROR_LOAD_DOCSOURCE, "DocReference[" + docReference + "] Error : " + e);
     }
   }
 

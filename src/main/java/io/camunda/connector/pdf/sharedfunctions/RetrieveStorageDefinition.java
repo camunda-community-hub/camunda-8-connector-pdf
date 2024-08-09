@@ -22,7 +22,9 @@ public class RetrieveStorageDefinition {
   /**
    * Toolbox, only static method
    */
-private RetrieveStorageDefinition() {}
+  private RetrieveStorageDefinition() {
+  }
+
   /**
    * From the Input or a default Doc source, return the StorageDefinition
    *

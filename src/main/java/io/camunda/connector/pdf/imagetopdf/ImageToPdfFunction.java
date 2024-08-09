@@ -38,6 +38,16 @@ public class ImageToPdfFunction implements PdfSubFunction {
   public static final String ERROR_DRAW_IMAGE = "DRAW_IMAGE";
   public static final String ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE = "NO_DESTINATION_STORAGE_DEFINITION";
   public static final String ERROR_DEFINITION_ERROR = "DEFINITION_ERROR";
+  private static final Map<String, String> listBpmnErrors = new HashMap<>();
+
+  static {
+    listBpmnErrors.putAll(LoadDocument.getBpmnErrors());
+    listBpmnErrors.put(ERROR_ACCESS_SOURCE_IMAGE, "Impossible to access a source image");
+    listBpmnErrors.put(ERROR_DRAW_IMAGE, "Error during draw the image");
+    listBpmnErrors.put(ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE, "A storage definition must be set");
+    listBpmnErrors.put(ERROR_DEFINITION_ERROR, "Definition error");
+    listBpmnErrors.put(PdfToolbox.ERROR_DURING_OPERATION, PdfToolbox.ERROR_DURING_OPERATION_LABEL);
+  }
 
   Logger logger = LoggerFactory.getLogger(ImageToPdfFunction.class.getName());
 
@@ -216,17 +226,6 @@ public class ImageToPdfFunction implements PdfSubFunction {
 
     }
     return Collections.emptyList();
-  }
-
-  private static final Map<String, String> listBpmnErrors = new HashMap<>();
-
-  static {
-    listBpmnErrors.putAll(LoadDocument.getBpmnErrors());
-    listBpmnErrors.put(ERROR_ACCESS_SOURCE_IMAGE, "Impossible to access a source image");
-    listBpmnErrors.put(ERROR_DRAW_IMAGE, "Error during draw the image");
-    listBpmnErrors.put(ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE, "A storage definition must be set");
-    listBpmnErrors.put(ERROR_DEFINITION_ERROR, "Definition error");
-    listBpmnErrors.put(PdfToolbox.ERROR_DURING_OPERATION, PdfToolbox.ERROR_DURING_OPERATION_LABEL);
   }
 
   @Override

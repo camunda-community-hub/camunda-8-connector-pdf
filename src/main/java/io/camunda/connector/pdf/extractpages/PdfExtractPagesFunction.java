@@ -36,6 +36,16 @@ import java.util.Map;
 
 public class PdfExtractPagesFunction implements PdfSubFunction {
   public static final String ERROR_EXTRACTION_ERROR = "EXTRACTION_ERROR";
+  private static final Map<String, String> listBpmnErrors = new HashMap<>();
+
+  static {
+    listBpmnErrors.putAll(LoadDocument.getBpmnErrors());
+    listBpmnErrors.putAll(RetrieveStorageDefinition.getBpmnErrors());
+    listBpmnErrors.putAll(LoadPdfDocument.getBpmnErrors());
+    listBpmnErrors.putAll(SavePdfDocument.getBpmnErrors());
+    listBpmnErrors.putAll(ExtractPageExpression.getBpmnErrorExtractExpression());
+    listBpmnErrors.put(ERROR_EXTRACTION_ERROR, "Extraction error");
+  }
 
   Logger logger = LoggerFactory.getLogger(PdfExtractPagesFunction.class.getName());
 
@@ -128,17 +138,6 @@ public class PdfExtractPagesFunction implements PdfSubFunction {
   @Override
   public String getSubFunctionType() {
     return "extract-pages";
-  }
-
-  private static final Map<String, String> listBpmnErrors = new HashMap<>();
-
-  static {
-    listBpmnErrors.putAll(LoadDocument.getBpmnErrors());
-    listBpmnErrors.putAll(RetrieveStorageDefinition.getBpmnErrors());
-    listBpmnErrors.putAll(LoadPdfDocument.getBpmnErrors());
-    listBpmnErrors.putAll(SavePdfDocument.getBpmnErrors());
-    listBpmnErrors.putAll(ExtractPageExpression.getBpmnErrorExtractExpression());
-    listBpmnErrors.put(ERROR_EXTRACTION_ERROR, "Extraction error");
   }
 
   public Map<String, String> getSubFunctionListBpmnErrors() {

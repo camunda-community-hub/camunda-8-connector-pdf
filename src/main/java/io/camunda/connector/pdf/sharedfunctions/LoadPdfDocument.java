@@ -22,7 +22,8 @@ public class LoadPdfDocument {
   /**
    * Toolbox, only static method
    */
-  private LoadPdfDocument() {}
+  private LoadPdfDocument() {
+  }
 
   /**
    * Load a PDDocument from a file variable
@@ -44,8 +45,8 @@ public class LoadPdfDocument {
               + "]");
     }
     if (sourceDocument.isEncrypted()) {
-      logger.error("{} PDF document is encrypted, this is not supported : {} ",
-          PdfToolbox.getLogSignature(subFunction), sourceFileVariable.getName());
+      logger.error("{} PDF document is encrypted, this is not supported : {} ", PdfToolbox.getLogSignature(subFunction),
+          sourceFileVariable.getName());
       throw new ConnectorException(ERROR_ENCRYPTED_PDF_NOT_SUPPORTED,
           "Connector[" + subFunction.getSubFunctionName() + "] Document is encrypted");
     }

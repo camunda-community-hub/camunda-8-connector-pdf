@@ -29,6 +29,16 @@ import java.util.Map;
 
 public class PdfWatermarkFunction implements PdfSubFunction {
   public static final String ERROR_INVALID_COLOR = "INVALID_COLOR";
+  private static final Map<String, String> listBpmnErrors = new HashMap<>();
+
+  static {
+    listBpmnErrors.putAll(LoadDocument.getBpmnErrors());
+    listBpmnErrors.putAll(RetrieveStorageDefinition.getBpmnErrors());
+    listBpmnErrors.putAll(LoadPdfDocument.getBpmnErrors());
+    listBpmnErrors.putAll(SavePdfDocument.getBpmnErrors());
+    listBpmnErrors.put(PdfToolbox.ERROR_DURING_OPERATION, PdfToolbox.ERROR_DURING_OPERATION_LABEL);
+    listBpmnErrors.put(ERROR_INVALID_COLOR, "Invalid color");
+  }
 
   Logger logger = LoggerFactory.getLogger(PdfWatermarkFunction.class.getName());
 
@@ -84,7 +94,8 @@ public class PdfWatermarkFunction implements PdfSubFunction {
     } catch (IOException e) {
       logger.error("{} exception during extraction ", PdfToolbox.getLogSignature(this), e);
       throw new ConnectorException(PdfToolbox.ERROR_DURING_OPERATION,
-          PdfToolbox.getLogSignature(this) + "Can't execute watermark operation on [" + pdfInput.getSourceFile() + "] : " + e.getMessage());
+          PdfToolbox.getLogSignature(this) + "Can't execute watermark operation on [" + pdfInput.getSourceFile()
+              + "] : " + e.getMessage());
 
     } finally {
       if (sourceDocument != null)
@@ -99,6 +110,7 @@ public class PdfWatermarkFunction implements PdfSubFunction {
 
   /**
    * calculate the writer option from the input
+   *
    * @param pdfInput inputs
    * @return writer option
    */
@@ -164,7 +176,6 @@ public class PdfWatermarkFunction implements PdfSubFunction {
     return Color.getColor(colorSt);
   }
 
-
   @Override
   public List<PdfParameter> getSubFunctionParameters(TypeParameter typeParameter) {
     switch (typeParameter) {
@@ -229,18 +240,7 @@ public class PdfWatermarkFunction implements PdfSubFunction {
     return Collections.emptyList();
   }
 
-  private static final Map<String, String> listBpmnErrors = new HashMap<>();
-
-  static {
-    listBpmnErrors.putAll(LoadDocument.getBpmnErrors());
-    listBpmnErrors.putAll(RetrieveStorageDefinition.getBpmnErrors());
-    listBpmnErrors.putAll(LoadPdfDocument.getBpmnErrors());
-    listBpmnErrors.putAll(SavePdfDocument.getBpmnErrors());
-    listBpmnErrors.put(PdfToolbox.ERROR_DURING_OPERATION, PdfToolbox.ERROR_DURING_OPERATION_LABEL);
-    listBpmnErrors.put(ERROR_INVALID_COLOR, "Invalid color");
-  }
-
-    @Override
+  @Override
   public Map<String, String> getSubFunctionListBpmnErrors() {
     return listBpmnErrors;
   }

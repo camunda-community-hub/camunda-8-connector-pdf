@@ -60,7 +60,8 @@ public class PdfInput implements CherryInput {
    * PdfToImage
    */
   public static final String INPUT_PDFTOIMAGE_DPI = "dpi";
-  public static final PdfParameter pdfParameterDestinationFileName = new PdfParameter(PdfInput.INPUT_DESTINATION_FILE_NAME,
+  public static final PdfParameter pdfParameterDestinationFileName = new PdfParameter(
+      PdfInput.INPUT_DESTINATION_FILE_NAME,
       // name
       "Destination file name", // label
       String.class, // class
@@ -73,8 +74,8 @@ public class PdfInput implements CherryInput {
       CherryInput.PARAMETER_MAP_LEVEL_OPTIONAL, // level
       "Storage Definition use to describe how to save the file. If not set, the storage used to read the source file is used.",
       10);
-  public Long dpi = 300L;
   private final Logger logger = LoggerFactory.getLogger(PdfInput.class.getName());
+  public Long dpi = 300L;
   private String pdfFunction;
   private String sourceFile;
   private List<String> listSourceFile;
