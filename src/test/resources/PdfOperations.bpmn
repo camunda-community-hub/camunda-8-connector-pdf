@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0939qu9" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.23.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.0.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0939qu9" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.27.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.0.0">
   <bpmn:collaboration id="Collaboration_1v5nw3b">
     <bpmn:participant id="Participant_0edqg9w" name="Operation on PDF" processRef="OperationOnPDF" />
   </bpmn:collaboration>
@@ -77,16 +77,16 @@
       <bpmn:extensionElements>
         <zeebe:ioMapping>
           <zeebe:input source="merge-pdfs" target="pdfFunction" />
+          <zeebe:input source="true" target="listSourceFile_optional" />
           <zeebe:input source="=[ &#34;{ \&#34;storageDefinition\&#34;: \&#34;URL\&#34;, \&#34;content\&#34;: \&#34;https://github.com/camunda-community-hub/camunda-8-connector-pdf/raw/main/src/test/resources/DocHeader.pdf\&#34;}&#34;,&#34;{ \&#34;storageDefinition\&#34;: \&#34;URL\&#34;, \&#34;content\&#34;: \&#34;https://github.com/camunda-community-hub/camunda-8-connector-pdf/raw/main/src/test/resources/BPMN%202.0%20Symbols.pdf\&#34;}&#34;]" target="listSourceFile" />
           <zeebe:input source="= &#34;pdfOperation_Merge.pdf&#34;" target="destinationFileName" />
-          <zeebe:input source="TEMPFOLDER" target="destinationStorageDefinition" />
-          <zeebe:input source="true" target="destinationFile_optional" />
+          <zeebe:input source="false" target="destinationStorageDefinition_optional" />
           <zeebe:output source="= result.destinationFile" target="docMerged" />
         </zeebe:ioMapping>
         <zeebe:taskDefinition type="c-pdf-function" />
         <zeebe:taskHeaders>
-          <zeebe:header key="Result Variable" value="result" />
-          <zeebe:header key="ERROR_EXPRESSION_KEYWORD" value="if is defined(error) then bpmnError(error.code, error.message) else null" />
+          <zeebe:header key="resultVariable" value="result" />
+          <zeebe:header key="errorExpression" value="if is defined(error) then bpmnError(error.code, error.message) else null" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_15nzoln</bpmn:incoming>

@@ -220,6 +220,7 @@ public class PdfWatermarkFunction implements PdfSubFunction {
               .addChoice(PdfInput.COLOR_WHITE, "white")
               .addChoice(PdfInput.COLOR_YELLOW, "yellow"),
 
+
           new PdfParameter(PdfInput.INPUT_WATERMARK_ROTATION, // name
               "Rotation", // label
               Long.class, // class
