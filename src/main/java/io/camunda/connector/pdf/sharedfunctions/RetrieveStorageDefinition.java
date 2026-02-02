@@ -5,7 +5,7 @@ import io.camunda.connector.pdf.PdfInput;
 import io.camunda.connector.pdf.toolbox.PdfSubFunction;
 import io.camunda.connector.pdf.toolbox.PdfToolbox;
 import io.camunda.filestorage.FileVariable;
-import io.camunda.filestorage.StorageDefinition;
+import io.camunda.filestorage.storage.StorageDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,24 +38,12 @@ public class RetrieveStorageDefinition {
                                                        FileVariable defaultDocSource,
                                                        boolean throwExceptionIfNull,
                                                        PdfSubFunction subFunction) {
-    String destinationStorageDefinitionSt = pdfInput.getDestinationStorageDefinition();
-
-    StorageDefinition destinationStorageDefinition;
-    if (destinationStorageDefinitionSt != null && !destinationStorageDefinitionSt.trim().isEmpty()) {
-      try {
-        destinationStorageDefinition = StorageDefinition.getFromString(destinationStorageDefinitionSt);
-      } catch (Exception e) {
-        logger.error("{} Bad storage definition [{}]", PdfToolbox.getLogSignature(subFunction),
-            destinationStorageDefinitionSt);
-        throw new ConnectorException(ERROR_BAD_STORAGE_DEFINITION,
-            PdfToolbox.getLogSignature(subFunction) + "Can't decode StorageDefinition ["
-                + destinationStorageDefinitionSt + "]");
-      }
-    } else {
+    StorageDefinition destinationStorageDefinition = pdfInput.getDestinationStorageDefinitionObject();
+if (destinationStorageDefinition == null) {
       destinationStorageDefinition = defaultDocSource == null ? null : defaultDocSource.getStorageDefinition();
     }
     if (throwExceptionIfNull && destinationStorageDefinition == null) {
-      // no storage : this is a problem
+      // no storage: this is a problem
       logger.error("{} no destination storage definition define ", PdfToolbox.getLogSignature(subFunction));
       throw new ConnectorException(ERROR_NO_DESTINATION_STORAGE_DEFINITION_DEFINE);
     }

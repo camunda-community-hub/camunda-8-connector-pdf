@@ -2,20 +2,19 @@ package io.camunda.connector.pdf.mergepdf;
 
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
-import io.camunda.connector.cherrytemplate.CherryInput;
+import io.camunda.connector.cherrytemplate.RunnerParameter;
 import io.camunda.connector.pdf.PdfInput;
 import io.camunda.connector.pdf.PdfOutput;
 import io.camunda.connector.pdf.sharedfunctions.LoadDocument;
 import io.camunda.connector.pdf.sharedfunctions.LoadPdfDocument;
 import io.camunda.connector.pdf.sharedfunctions.RetrieveStorageDefinition;
 import io.camunda.connector.pdf.sharedfunctions.SavePdfDocument;
-import io.camunda.connector.pdf.toolbox.PdfParameter;
 import io.camunda.connector.pdf.toolbox.PdfSubFunction;
 import io.camunda.connector.pdf.toolbox.PdfToolbox;
 import io.camunda.filestorage.FileRepoFactory;
 import io.camunda.filestorage.FileVariable;
 import io.camunda.filestorage.FileVariableReference;
-import io.camunda.filestorage.StorageDefinition;
+import io.camunda.filestorage.storage.StorageDefinition;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,17 +56,17 @@ public class PdfMergePdfFunction implements PdfSubFunction {
     FileRepoFactory fileRepoFactory = FileRepoFactory.getInstance();
 
     PDDocument destinationDocument = null;
-    // PDF Library oblige to keep all documents open until we write the destinationDocument. So, keep it here, and close all at the end
+    // PDF Library obliges to keep all documents open until we write the destinationDocument. So, keep it here, and close all at the end
     List<PDDocument> sourceDocumentsList = new ArrayList<>();
 
     try {
       List<FileVariableReference> fileVariableReferenceList = new ArrayList<>();
 
-      List<String> referenceDocSource = pdfInput.getListSourceFile();
+      List<Object> referenceDocSource = pdfInput.getListSourceFile();
       logger.info("{} Start MergeDocument {} documents", PdfToolbox.getLogSignature(this), referenceDocSource.size());
 
-      for (String reference : referenceDocSource) {
-        fileVariableReferenceList.add(FileVariableReference.fromJson(reference));
+      for (Object reference : referenceDocSource) {
+        fileVariableReferenceList.add(FileVariableReference.fromObject(reference));
       }
 
       String destinationFileName = pdfInput.getDestinationFileName();
@@ -80,7 +79,7 @@ public class PdfMergePdfFunction implements PdfSubFunction {
 
       for (FileVariableReference fileVariableReference : fileVariableReferenceList) {
         FileVariable docFileToAdd = LoadDocument.loadDocSourceFromReference(fileVariableReference, fileRepoFactory,
-            this);
+            this,outboundConnectorContext);
 
         if (destinationStorageDefinition == null)
           destinationStorageDefinition = docFileToAdd.getStorageDefinition();
@@ -107,7 +106,7 @@ public class PdfMergePdfFunction implements PdfSubFunction {
       // produce the result, and save it in the pdfOutput
       // Exception PdfToolbox.ERROR_CREATE_FILEVARIABLE, PdfToolbox.ERROR_SAVE_ERROR
       PdfOutput pdfOutput = SavePdfDocument.savePdfFile(new PdfOutput(), destinationDocument, destinationFileName,
-          destinationStorageDefinition, fileRepoFactory, this);
+          destinationStorageDefinition, fileRepoFactory, this,outboundConnectorContext);
 
       logger.info("{} merge {} pages from {} documents to [{}]", PdfToolbox.getLogSignature(this), nbPagesMerged,
           fileVariableReferenceList.size(), destinationFileName);
@@ -137,20 +136,6 @@ public class PdfMergePdfFunction implements PdfSubFunction {
 
   }
 
-  public List<PdfParameter> getSubFunctionParameters(TypeParameter typeParameter) {
-    if (typeParameter.equals(TypeParameter.INPUT)) {
-
-      return Arrays.asList(new PdfParameter(PdfInput.INPUT_LIST_SOURCE_FILE, // name
-              "List source file", // label
-              List.class, // class
-              CherryInput.PARAMETER_MAP_LEVEL_OPTIONAL, // level
-              "List of FileVariable for the file to convert", 1),
-
-          PdfInput.pdfParameterDestinationFileName, PdfInput.pdfParameterDestinationStorageDefinition);
-    } else {
-      return List.of(PdfOutput.PDF_PARAMETER_DESTINATION_FILE);
-    }
-  }
 
   public String getSubFunctionName() {
     return "Merge documents";
@@ -165,8 +150,32 @@ public class PdfMergePdfFunction implements PdfSubFunction {
     return "Merge two PDFs document in one PDF";
   }
 
+
   public Map<String, String> getSubFunctionListBpmnErrors() {
     return listBpmnErrors;
   }
 
+  @Override
+  public List<RunnerParameter> getInputsParameter() {
+    return Arrays.asList(new RunnerParameter(PdfInput.LIST_SOURCE_FILE, // name
+                    "List source file", // label
+                    List.class, // class
+                    RunnerParameter.Level.OPTIONAL, // level
+                    "List of FileVariable for the file to convert"),
+
+            PdfInput.pdfParameterDestinationFileName,
+            PdfInput.pdfParameterDestinationJsonStorageDefinition,
+            PdfInput.pdfParameterDestinationStorageDefinition,
+            PdfInput.pdfParameterDestinationStorageDefinitionComplement,
+            PdfInput.pdfParameterDestinationStorageDefinitionCmis);
+  }
+
+  @Override
+  public List<RunnerParameter> getOutputsParameter() {
+    return List.of(PdfOutput.PDF_PARAMETER_DESTINATION_FILE);  }
+
+  @Override
+  public Map<String, String> getBpmnErrors() {
+    return Map.of();
+  }
 }

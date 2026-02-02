@@ -1,18 +1,20 @@
 package io.camunda.connector.pdf.sharedfunctions;
 
 import io.camunda.connector.api.error.ConnectorException;
+import io.camunda.connector.api.outbound.OutboundConnectorContext;
 import io.camunda.connector.pdf.PdfOutput;
 import io.camunda.connector.pdf.toolbox.PdfSubFunction;
 import io.camunda.connector.pdf.toolbox.PdfToolbox;
 import io.camunda.filestorage.FileRepoFactory;
 import io.camunda.filestorage.FileVariable;
 import io.camunda.filestorage.FileVariableReference;
-import io.camunda.filestorage.StorageDefinition;
+import io.camunda.filestorage.storage.StorageDefinition;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.Map;
 
 public class SavePdfDocument {
@@ -47,7 +49,8 @@ public class SavePdfDocument {
                                       String fileName,
                                       StorageDefinition storageDefinition,
                                       FileRepoFactory fileRepoFactory,
-                                      PdfSubFunction subFunction) throws ConnectorException {
+                                      PdfSubFunction subFunction,
+                                      OutboundConnectorContext outboundConnectorContext) throws ConnectorException {
     FileVariable fileVariableOut = new FileVariable();
     try {
 
@@ -68,7 +71,25 @@ public class SavePdfDocument {
       }
 
       // Second, write it to the fileRepo
-      FileVariableReference outputFileReference = fileRepoFactory.saveFileVariable(fileVariableOut);
+      FileVariableReference outputFileReference = fileRepoFactory.saveFileVariable(fileVariableOut, outboundConnectorContext);
+
+      // je triche : on renome le fichier
+
+      String fileNameToRename= outputFileReference.content.toString();
+      File oldFile = new File("c:/temp/unzip/result/" + fileNameToRename);
+      int index = fileNameToRename.indexOf(" - [");
+      String newFileName = fileNameToRename;
+      if (index != -1) {
+        newFileName = fileNameToRename.substring(0, index)+".pdf";
+      } else {
+        index = fileNameToRename.indexOf(".pdf");
+        newFileName = fileNameToRename.substring(0, index)+".pdf";
+      }
+      // New file name in the same directory
+      File newFile = new File("c:/temp/unzip/result/" +newFileName);
+      // Rename the file
+      boolean success = oldFile.renameTo(newFile);
+
       pdfOutput.destinationFile = outputFileReference.toJson();
       return pdfOutput;
     } catch (Exception e) {
@@ -82,13 +103,23 @@ public class SavePdfDocument {
     }
   }
 
+  /**
+   * Save file
+   * @param pdfOutput pdfOutput to save
+   * @param fileVariable file variable to save the value
+   * @param fileRepoFactory repository
+   * @param subFunction subfunction to log
+   * @param outboundConnectorContext Outbound connector
+   * @throws ConnectorException
+   */
   public static void saveFile(PdfOutput pdfOutput,
                               FileVariable fileVariable,
                               FileRepoFactory fileRepoFactory,
-                              PdfSubFunction subFunction) throws ConnectorException {
+                              PdfSubFunction subFunction,
+                              OutboundConnectorContext outboundConnectorContext) throws ConnectorException {
 
     try {
-      FileVariableReference outputFileReference = fileRepoFactory.saveFileVariable(fileVariable);
+      FileVariableReference outputFileReference = fileRepoFactory.saveFileVariable(fileVariable,outboundConnectorContext);
       pdfOutput.addDestinationFileInList(outputFileReference.toJson());
     } catch (Exception e) {
       logger.error("{} Error during save FileVariable[{}] StorageDefinition[{}] : {}",
@@ -108,4 +139,6 @@ public class SavePdfDocument {
   public static Map<String, String> getBpmnErrors() {
     return Map.of(ERROR_CREATE_FILEVARIABLE, ERROR_CREATE_FILEVARIABLE_LABEL, ERROR_SAVE_ERROR, ERROR_SAVE_ERROR_LABEL);
   }
+
+
 }

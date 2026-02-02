@@ -1,6 +1,7 @@
 package io.camunda.connector.pdf.sharedfunctions;
 
 import io.camunda.connector.api.error.ConnectorException;
+import io.camunda.connector.api.outbound.OutboundConnectorContext;
 import io.camunda.connector.pdf.toolbox.PdfSubFunction;
 import io.camunda.connector.pdf.toolbox.PdfToolbox;
 import io.camunda.filestorage.FileRepoFactory;
@@ -34,12 +35,13 @@ public class LoadDocument {
    * @param subFunction     caller of the function
    * @return the FileVariable, else an error
    */
-  public static FileVariable loadDocSource(String sourceFile,
+  public static FileVariable loadDocSource(Object sourceFile,
                                            FileRepoFactory fileRepoFactory,
-                                           PdfSubFunction subFunction) {
+                                           PdfSubFunction subFunction,
+                                           OutboundConnectorContext outboundConnectorContext) {
     try {
-      FileVariableReference docSourceReference = FileVariableReference.fromJson(sourceFile);
-      return loadDocSourceFromReference(docSourceReference, fileRepoFactory, subFunction);
+      FileVariableReference docSourceReference = FileVariableReference.fromObject(sourceFile);
+      return loadDocSourceFromReference(docSourceReference, fileRepoFactory, subFunction,outboundConnectorContext);
     } catch (ConnectorException ce) {
       throw ce;
     } catch (Exception e) {
@@ -51,9 +53,10 @@ public class LoadDocument {
 
   public static FileVariable loadDocSourceFromReference(FileVariableReference docReference,
                                                         FileRepoFactory fileRepoFactory,
-                                                        PdfSubFunction subFunction) {
+                                                        PdfSubFunction subFunction,
+                                                        OutboundConnectorContext outboundConnectorContext) {
     try {
-      FileVariable docSource = fileRepoFactory.loadFileVariable(docReference);
+      FileVariable docSource = fileRepoFactory.loadFileVariable(docReference,outboundConnectorContext);
 
       // get the file
       if (docSource == null || docSource.getValue() == null) {

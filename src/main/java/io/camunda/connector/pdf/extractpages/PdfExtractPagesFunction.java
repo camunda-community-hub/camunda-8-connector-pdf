@@ -2,7 +2,7 @@ package io.camunda.connector.pdf.extractpages;
 
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
-import io.camunda.connector.cherrytemplate.CherryInput;
+import io.camunda.connector.cherrytemplate.RunnerParameter;
 import io.camunda.connector.pdf.PdfInput;
 import io.camunda.connector.pdf.PdfOutput;
 import io.camunda.connector.pdf.sharedfunctions.LoadDocument;
@@ -10,18 +10,15 @@ import io.camunda.connector.pdf.sharedfunctions.LoadPdfDocument;
 import io.camunda.connector.pdf.sharedfunctions.RetrieveStorageDefinition;
 import io.camunda.connector.pdf.sharedfunctions.SavePdfDocument;
 import io.camunda.connector.pdf.toolbox.ExtractPageExpression;
-import io.camunda.connector.pdf.toolbox.PdfParameter;
 import io.camunda.connector.pdf.toolbox.PdfSubFunction;
 import io.camunda.connector.pdf.toolbox.PdfToolbox;
 import io.camunda.filestorage.FileRepoFactory;
 import io.camunda.filestorage.FileVariable;
-import io.camunda.filestorage.StorageDefinition;
+import io.camunda.filestorage.storage.StorageDefinition;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +70,7 @@ public class PdfExtractPagesFunction implements PdfSubFunction {
         pdfInput.getSourceFile(), extractExpression);
 
     try {
-      FileVariable docSource = LoadDocument.loadDocSource(pdfInput.getSourceFile(), fileRepoFactory, this);
+      FileVariable docSource = LoadDocument.loadDocSource(pdfInput.getSourceFile(), fileRepoFactory, this,outboundConnectorContext);
 
       String destinationFileName = pdfInput.getDestinationFileName();
 
@@ -96,7 +93,7 @@ public class PdfExtractPagesFunction implements PdfSubFunction {
       // produce the result, and save it in the pdfOutput
       // Exception PdfToolbox.ERROR_CREATE_FILEVARIABLE, PdfToolbox.ERROR_SAVE_ERROR
       PdfOutput pdfOutput = SavePdfDocument.savePdfFile(new PdfOutput(), destinationDocument, destinationFileName,
-          destinationStorageDefinition, fileRepoFactory, this);
+          destinationStorageDefinition, fileRepoFactory, this,outboundConnectorContext);
 
       logger.info("{} Extract {} pages from document[{}] to [{}]", PdfToolbox.getLogSignature(this), nbPagesExtracted,
           docSource.getName(), destinationFileName);
@@ -144,28 +141,36 @@ public class PdfExtractPagesFunction implements PdfSubFunction {
     return listBpmnErrors;
   }
 
-  public List<PdfParameter> getSubFunctionParameters(TypeParameter typeParameter) {
-    switch (typeParameter) {
-    case INPUT:
-      return Arrays.asList(new PdfParameter(PdfInput.INPUT_SOURCE_FILE, // name
-              "Source file", // label
-              Object.class, // class
-              CherryInput.PARAMETER_MAP_LEVEL_REQUIRED, // level
-              "FileVariable for the file to convert", 1),
 
-          new PdfParameter(PdfInput.INPUT_EXTRACT_EXPRESSION, // name
-              "Extract Expression", // label
-              String.class, // class
-              CherryInput.PARAMETER_MAP_LEVEL_REQUIRED, // level
-              "Extract pilot: example, 2-4 mean extract pages 2 to 4 (document page start at 1). Use \u0027n\u0027 to specify the end of the document (2-n) extract from page 2 to the end. Simple number is accepted to extract a page. Example: 4-5, 10, 15-n or 2-n, 1 (first page to the end)",
-              1),
 
-          PdfInput.pdfParameterDestinationFileName, PdfInput.pdfParameterDestinationStorageDefinition);
+  @Override
+  public List<RunnerParameter> getInputsParameter() {
+    return List.of(
+    new RunnerParameter(PdfInput.SOURCE_FILE, // name
+                    "Source file", // label
+                    Object.class, // class
+                    RunnerParameter.Level.REQUIRED, // level
+                    "FileVariable for the file to convert"),
 
-    case OUTPUT:
-      return List.of(PdfOutput.PDF_PARAMETER_DESTINATION_FILE);
-    }
-    return Collections.emptyList();
+            new RunnerParameter(PdfInput.EXTRACT_EXPRESSION, // name
+                    "Extract Expression", // label
+                    String.class, // class
+                    RunnerParameter.Level.REQUIRED, // level
+                    "Extract pilot: example, 2-4 mean extract pages 2 to 4 (document page start at 1). Use \u0027n\u0027 to specify the end of the document (2-n) extract from page 2 to the end. Simple number is accepted to extract a page. Example: 4-5, 10, 15-n or 2-n, 1 (first page to the end)"),
+
+            PdfInput.pdfParameterDestinationFileName,
+            PdfInput.pdfParameterDestinationJsonStorageDefinition,
+            PdfInput.pdfParameterDestinationStorageDefinition,
+            PdfInput.pdfParameterDestinationStorageDefinitionComplement,
+            PdfInput.pdfParameterDestinationStorageDefinitionCmis);
   }
 
+  @Override
+  public List<RunnerParameter> getOutputsParameter() {
+    return List.of(PdfOutput.PDF_PARAMETER_DESTINATION_FILE);
+  }
+
+  @Override
+  public Map<String, String> getBpmnErrors() {
+    return listBpmnErrors;  }
 }

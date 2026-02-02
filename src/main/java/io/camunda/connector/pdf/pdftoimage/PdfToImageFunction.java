@@ -2,7 +2,7 @@ package io.camunda.connector.pdf.pdftoimage;
 
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
-import io.camunda.connector.cherrytemplate.CherryInput;
+import io.camunda.connector.cherrytemplate.RunnerParameter;
 import io.camunda.connector.pdf.PdfInput;
 import io.camunda.connector.pdf.PdfOutput;
 import io.camunda.connector.pdf.sharedfunctions.LoadDocument;
@@ -10,13 +10,11 @@ import io.camunda.connector.pdf.sharedfunctions.LoadPdfDocument;
 import io.camunda.connector.pdf.sharedfunctions.RetrieveStorageDefinition;
 import io.camunda.connector.pdf.sharedfunctions.SavePdfDocument;
 import io.camunda.connector.pdf.toolbox.ExtractPageExpression;
-import io.camunda.connector.pdf.toolbox.PdfParameter;
 import io.camunda.connector.pdf.toolbox.PdfSubFunction;
 import io.camunda.connector.pdf.toolbox.PdfToolbox;
 import io.camunda.filestorage.FileRepoFactory;
 import io.camunda.filestorage.FileVariable;
-import io.camunda.filestorage.FileVariableReference;
-import io.camunda.filestorage.StorageDefinition;
+import io.camunda.filestorage.storage.StorageDefinition;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.slf4j.Logger;
@@ -26,7 +24,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,12 +45,12 @@ public class PdfToImageFunction implements PdfSubFunction {
 
   /**
    * @param pdfInput input
-   * @param context  context of the task
+   * @param outboundConnectorContext  context of the task
    * @return the output
    * @throws ConnectorException in case of any error
    */
   @Override
-  public PdfOutput executeSubFunction(PdfInput pdfInput, OutboundConnectorContext context) throws ConnectorException {
+  public PdfOutput executeSubFunction(PdfInput pdfInput, OutboundConnectorContext outboundConnectorContext) throws ConnectorException {
 
     logger.debug("{} Start PdfToImages", PdfToolbox.getLogSignature(this));
 
@@ -61,7 +58,7 @@ public class PdfToImageFunction implements PdfSubFunction {
     PDDocument docSourcePDF = null;
 
     try {
-      FileVariable docSource = LoadDocument.loadDocSource(pdfInput.getSourceFile(), fileRepoFactory, this);
+      FileVariable docSource = LoadDocument.loadDocSource(pdfInput.getSourceFile(), fileRepoFactory, this,outboundConnectorContext);
 
       logger.info("{} Start PdfToImages on doc {} ", PdfToolbox.getLogSignature(this), docSource.getName());
 
@@ -103,7 +100,7 @@ public class PdfToImageFunction implements PdfSubFunction {
         fileVariableOut.setValue(baos.toByteArray());
         fileVariableOut.setName(PdfToolbox.getDocumentName(docSource, true) + "_" + (pageIndex + 1) + ".png");
         fileVariableOut.setStorageDefinition(destinationStorageDefinition);
-        SavePdfDocument.saveFile(pdfOutput, fileVariableOut, fileRepoFactory, this);
+        SavePdfDocument.saveFile(pdfOutput, fileVariableOut, fileRepoFactory, this,outboundConnectorContext);
 
         long timeStep3WriteFile = System.currentTimeMillis();
         logger.info("{} Page {}/{} Render {} ms, WriteImage {} ms, WriteFile {} ms imageSize {} Ko",
@@ -130,41 +127,41 @@ public class PdfToImageFunction implements PdfSubFunction {
 
   }
 
+
   @Override
-  public List<PdfParameter> getSubFunctionParameters(TypeParameter typeParameter) {
-    switch (typeParameter) {
-    case INPUT:
-      return Arrays.asList(new PdfParameter(PdfInput.INPUT_SOURCE_FILE, // name
-              "Source file", // label
-              Object.class, // class
-              CherryInput.PARAMETER_MAP_LEVEL_REQUIRED, // level
-              "FileVariable for the file to convert", 1),
+  public List<RunnerParameter> getInputsParameter() {
+    return Arrays.asList(new RunnerParameter(PdfInput.SOURCE_FILE, // name
+                    "Source file", // label
+                    Object.class, // class
+                    RunnerParameter.Level.REQUIRED, // level
+                    "FileVariable for the file to convert"),
 
-          new PdfParameter(PdfInput.INPUT_EXTRACT_EXPRESSION, // name
-              "Extract Expression", // label
-              String.class, // class
-              CherryInput.PARAMETER_MAP_LEVEL_REQUIRED, // level
-              "Extract pilot: example, 2-4 mean extract pages 2 to 4 (document page start at 1). Use \u0027n\u0027 to specify the end of the document (2-n) extract from page 2 to the end. Simple number is accepted to extract a page. Example: 4-5, 10, 15-n or 2-n, 1 (first page to the end)",
-              1),
+            new RunnerParameter(PdfInput.EXTRACT_EXPRESSION, // name
+                    "Extract Expression", // label
+                    String.class, // class
+                    RunnerParameter.Level.REQUIRED, // level
+                    "Extract pilot: example, 2-4 mean extract pages 2 to 4 (document page start at 1). Use \u0027n\u0027 to specify the end of the document (2-n) extract from page 2 to the end. Simple number is accepted to extract a page. Example: 4-5, 10, 15-n or 2-n, 1 (first page to the end)"),
 
-          new PdfParameter(PdfInput.INPUT_PDFTOIMAGE_DPI, // name
-              "Dpi", // label
-              Long.class, // class
-              CherryInput.PARAMETER_MAP_LEVEL_OPTIONAL, // level
-              "Each page will be convert to an image. Specify the DPI for the generation (default is 300 dpi)", 1),
+            new RunnerParameter(PdfInput.PDFTOIMAGE_DPI, // name
+                    "Dpi", // label
+                    Long.class, // class
+                    RunnerParameter.Level.OPTIONAL, // level
+                    "Each page will be convert to an image. Specify the DPI for the generation (default is 300 dpi)"),
 
-          PdfInput.pdfParameterDestinationFileName, PdfInput.pdfParameterDestinationStorageDefinition);
+            PdfInput.pdfParameterDestinationFileName,
+            PdfInput.pdfParameterDestinationJsonStorageDefinition,
+            PdfInput.pdfParameterDestinationStorageDefinition,
+            PdfInput.pdfParameterDestinationStorageDefinitionComplement,
+            PdfInput.pdfParameterDestinationStorageDefinitionCmis);  }
 
-    case OUTPUT:
-      return List.of(PdfOutput.PDF_PARAMETER_LIST_DESTINATION_FILE);
-    }
-    return Collections.emptyList();
+  @Override
+  public List<RunnerParameter> getOutputsParameter() {
+    return List.of(PdfOutput.PDF_PARAMETER_LIST_DESTINATION_FILE);
   }
 
   @Override
-  public Map<String, String> getSubFunctionListBpmnErrors() {
-    return listBpmnErrors;
-  }
+  public Map<String, String> getBpmnErrors() {
+    return listBpmnErrors;  }
 
   @Override
   public String getSubFunctionName() {

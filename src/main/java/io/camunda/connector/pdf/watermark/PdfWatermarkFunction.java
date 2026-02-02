@@ -2,19 +2,18 @@ package io.camunda.connector.pdf.watermark;
 
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
-import io.camunda.connector.cherrytemplate.CherryInput;
+import io.camunda.connector.cherrytemplate.RunnerParameter;
 import io.camunda.connector.pdf.PdfInput;
 import io.camunda.connector.pdf.PdfOutput;
 import io.camunda.connector.pdf.sharedfunctions.LoadDocument;
 import io.camunda.connector.pdf.sharedfunctions.LoadPdfDocument;
 import io.camunda.connector.pdf.sharedfunctions.RetrieveStorageDefinition;
 import io.camunda.connector.pdf.sharedfunctions.SavePdfDocument;
-import io.camunda.connector.pdf.toolbox.PdfParameter;
 import io.camunda.connector.pdf.toolbox.PdfSubFunction;
 import io.camunda.connector.pdf.toolbox.PdfToolbox;
 import io.camunda.filestorage.FileRepoFactory;
 import io.camunda.filestorage.FileVariable;
-import io.camunda.filestorage.StorageDefinition;
+import io.camunda.filestorage.storage.StorageDefinition;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +49,7 @@ public class PdfWatermarkFunction implements PdfSubFunction {
    * @throws Exception in case of any error
    */
   @Override
-  public PdfOutput executeSubFunction(PdfInput pdfInput, OutboundConnectorContext context) throws ConnectorException {
+  public PdfOutput executeSubFunction(PdfInput pdfInput, OutboundConnectorContext outboundConnectorContext) throws ConnectorException {
     logger.debug("{} Start Watermark", PdfToolbox.getLogSignature(this));
 
     FileRepoFactory fileRepoFactory = FileRepoFactory.getInstance();
@@ -59,7 +57,7 @@ public class PdfWatermarkFunction implements PdfSubFunction {
 
     try {
 
-      FileVariable docSource = LoadDocument.loadDocSource(pdfInput.getSourceFile(), fileRepoFactory, this);
+      FileVariable docSource = LoadDocument.loadDocSource(pdfInput.getSourceFile(), fileRepoFactory, this,outboundConnectorContext);
 
       String destinationFileName = pdfInput.getDestinationFileName();
 
@@ -84,7 +82,7 @@ public class PdfWatermarkFunction implements PdfSubFunction {
       // produce the result, and save it in the pdfOutput
       // Exception PdfToolbox.ERROR_CREATE_FILEVARIABLE, PdfToolbox.ERROR_SAVE_ERROR
       PdfOutput pdfOutput = SavePdfDocument.savePdfFile(new PdfOutput(), sourceDocument, destinationFileName,
-          destinationStorageDefinition, fileRepoFactory, this);
+          destinationStorageDefinition, fileRepoFactory, this,outboundConnectorContext);
       logger.info("{} finish Watermark [{}] document[{}] to [{}] ", PdfToolbox.getLogSignature(this), watermark,
           pdfInput.getSourceFile(), pdfInput.getDestinationFileName());
       return pdfOutput;
@@ -176,75 +174,78 @@ public class PdfWatermarkFunction implements PdfSubFunction {
     return Color.getColor(colorSt);
   }
 
+
+
   @Override
-  public List<PdfParameter> getSubFunctionParameters(TypeParameter typeParameter) {
-    switch (typeParameter) {
-    case INPUT:
-      return Arrays.asList(new PdfParameter(PdfInput.INPUT_SOURCE_FILE, // name
-              "Source file", // label
-              Object.class, // class
-              CherryInput.PARAMETER_MAP_LEVEL_REQUIRED, // level
-              "FileVariable for the file to convert", 1),
+  public List<RunnerParameter> getInputsParameter() {
+    return Arrays.asList(new RunnerParameter(PdfInput.SOURCE_FILE, // name
+                    "Source file", // label
+                    Object.class, // class
+                    RunnerParameter.Level.REQUIRED, // level
+                    "FileVariable for the file to convert"),
 
-          new PdfParameter(PdfInput.INPUT_WATERMARK, // name
-              "Watermark", // label
-              String.class, // class
-              CherryInput.PARAMETER_MAP_LEVEL_REQUIRED, // level
-              "Watermark to add in each page", 1),
+            new RunnerParameter(PdfInput.WATERMARK, // name
+                    "Watermark", // label
+                    String.class, // class
+                    RunnerParameter.Level.REQUIRED, // level
+                    "Watermark to add in each page"),
 
-          new PdfParameter(PdfInput.INPUT_WATERMARK_POSITION, // name
-              "Position", // label
-              String.class, // class
-              CherryInput.PARAMETER_MAP_LEVEL_REQUIRED, // level
-              "Watermark to add in each page", 1) // Param
-              .addChoice(PdfInput.INPUT_WATERMARK_POSITION_TOP, "Top")
-              .addChoice(PdfInput.INPUT_WATERMARK_POSITION_CENTER, "Center")
-              .addChoice(PdfInput.INPUT_WATERMARK_POSITION_BOTTOM, "Bottom"),
+            new RunnerParameter(PdfInput.WATERMARK_POSITION, // name
+                    "Position", // label
+                    String.class, // class
+                    RunnerParameter.Level.REQUIRED, // level
+                    "Watermark to add in each page") // Param
+                    .addChoice(PdfInput.WATERMARK_POSITION_TOP, "Top")
+                    .addChoice(PdfInput.WATERMARK_POSITION_CENTER, "Center")
+                    .addChoice(PdfInput.WATERMARK_POSITION_BOTTOM, "Bottom"),
 
-          new PdfParameter(PdfInput.INPUT_WATERMARK_COLOR, // name
-              "Color", // label
-              String.class, // class
-              CherryInput.PARAMETER_MAP_LEVEL_OPTIONAL, // level
-              "Color to write the watermark", 1) // param
-              .addChoice(PdfInput.COLOR_RED, "red")
-              .addChoice(PdfInput.COLOR_GREEN, "green")
-              .addChoice(PdfInput.COLOR_BLACK, "black")
-              .addChoice(PdfInput.COLOR_BLUE, "blue")
-              .addChoice(PdfInput.COLOR_CYAN, "cyan")
-              .addChoice(PdfInput.COLOR_GRAY, "gray")
-              .addChoice(PdfInput.COLOR_DARKGRAY, "darkGray")
-              .addChoice(PdfInput.COLOR_LIGHTGRAY, "lightGray")
-              .addChoice(PdfInput.COLOR_MAGENTA, "magenta")
-              .addChoice(PdfInput.COLOR_ORANGE, "orange")
-              .addChoice(PdfInput.COLOR_PINK, "pink")
-              .addChoice(PdfInput.COLOR_WHITE, "white")
-              .addChoice(PdfInput.COLOR_YELLOW, "yellow"),
+            new RunnerParameter(PdfInput.WATERMARK_COLOR, // name
+                    "Color", // label
+                    String.class, // class
+                    RunnerParameter.Level.OPTIONAL, // level
+                    "Color to write the watermark") // param
+                    .addChoice(PdfInput.COLOR_RED, "red")
+                    .addChoice(PdfInput.COLOR_GREEN, "green")
+                    .addChoice(PdfInput.COLOR_BLACK, "black")
+                    .addChoice(PdfInput.COLOR_BLUE, "blue")
+                    .addChoice(PdfInput.COLOR_CYAN, "cyan")
+                    .addChoice(PdfInput.COLOR_GRAY, "gray")
+                    .addChoice(PdfInput.COLOR_DARKGRAY, "darkGray")
+                    .addChoice(PdfInput.COLOR_LIGHTGRAY, "lightGray")
+                    .addChoice(PdfInput.COLOR_MAGENTA, "magenta")
+                    .addChoice(PdfInput.COLOR_ORANGE, "orange")
+                    .addChoice(PdfInput.COLOR_PINK, "pink")
+                    .addChoice(PdfInput.COLOR_WHITE, "white")
+                    .addChoice(PdfInput.COLOR_YELLOW, "yellow"),
 
 
-          new PdfParameter(PdfInput.INPUT_WATERMARK_ROTATION, // name
-              "Rotation", // label
-              Long.class, // class
-              CherryInput.PARAMETER_MAP_LEVEL_OPTIONAL, // level
-              "Rotation (0-360)", 1),
+            new RunnerParameter(PdfInput.WATERMARK_ROTATION, // name
+                    "Rotation", // label
+                    Long.class, // class
+                    RunnerParameter.Level.OPTIONAL, // level
+                    "Rotation (0-360)"),
 
-          new PdfParameter(PdfInput.INPUT_WATERMARK_FONTHEIGHT, // name
-              "Font Height", // label
-              Long.class, // class
-              CherryInput.PARAMETER_MAP_LEVEL_OPTIONAL, // level
-              "Font height (30 is small)", 1),
+            new RunnerParameter(PdfInput.WATERMARK_FONTHEIGHT, // name
+                    "Font Height", // label
+                    Long.class, // class
+                    RunnerParameter.Level.OPTIONAL, // level
+                    "Font height (30 is small)"),
 
-          PdfInput.pdfParameterDestinationFileName, PdfInput.pdfParameterDestinationStorageDefinition);
-
-    case OUTPUT:
-      return List.of(PdfOutput.PDF_PARAMETER_DESTINATION_FILE);
-    }
-    return Collections.emptyList();
+            PdfInput.pdfParameterDestinationFileName,
+            PdfInput.pdfParameterDestinationJsonStorageDefinition,
+            PdfInput.pdfParameterDestinationStorageDefinition,
+            PdfInput.pdfParameterDestinationStorageDefinitionComplement,
+            PdfInput.pdfParameterDestinationStorageDefinitionCmis);
   }
 
   @Override
-  public Map<String, String> getSubFunctionListBpmnErrors() {
-    return listBpmnErrors;
+  public List<RunnerParameter> getOutputsParameter() {
+    return List.of(PdfOutput.PDF_PARAMETER_DESTINATION_FILE);
   }
+
+  @Override
+  public Map<String, String> getBpmnErrors() {
+    return listBpmnErrors;  }
 
   @Override
   public String getSubFunctionName() {
