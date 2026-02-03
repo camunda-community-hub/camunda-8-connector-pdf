@@ -21,8 +21,8 @@
 
 
         <!-- connector SDK version -->
-        <!-- connector SDK version -->
-        <version.connector>8.8.9</version.connector>
+        <!-- connector SDK version 8.8.7 / 8.7.8-->
+        <version.connector>8.8.7</version.connector>
         <version.chemistry>1.1.0</version.chemistry>
 
 
@@ -148,13 +148,34 @@
         </dependency>
 
         <!-- to generate the element-template -->
+        <!-- execute io.camunda.pdf.DocumentationGenerator
         <dependency>
             <groupId>io.camunda.community</groupId>
             <artifactId>zeebe-cherry-runtime</artifactId>
             <version>3.4.0</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.camunda.connector</groupId>
+                    <artifactId>connector-runtime-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.camunda.connector</groupId>
+                    <artifactId>spring-boot-starter-camunda-connectors</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.camunda.connector</groupId>
+                    <artifactId>connector-runtime-spring</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.camunda</groupId>
+                    <artifactId>spring-boot-starter-camunda-sdk</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+        -->
     </dependencies>
+
 
     <build>
         <plugins>

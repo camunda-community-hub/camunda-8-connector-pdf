@@ -20,22 +20,12 @@ spec:
     spec:
       containers:
         - name: c8-con-pdf
-          image: ghcr.io/camunda-community-hub/process-execution-automator:latest
+          image: ghcr.io/camunda-community-hub/c8-con-pdf:latest
           imagePullPolicy: Always
           env:
             - name: JAVA_TOOL_OPTIONS
               value: >-
-                -Dautomator.startup.serverName=Camunda8Calcair
-                -Dautomator.servers.camunda8.name=Camunda8Calcair
-                -Dautomator.servers.camunda8.zeebeGrpcAddress=http://camunda-zeebe-gateway:26500
-                -Dautomator.servers.camunda8.operateUrl=http://camunda-operate:80
-                -Dautomator.servers.camunda8.operateUserName=demo
-                -Dautomator.servers.camunda8.operateUserPassword=demo
-                -Dautomator.servers.camunda8.taskListUrl=http://camunda-tasklist:80
-                -Dautomator.servers.camunda8.taskListUserName=demo
-                -Dautomator.servers.camunda8.taskListUserPassword=demo
-                -Dautomator.servers.camunda8.workerExecutionThreads=2000
-                -Dautomator.startup.logLevel=MAIN
+                -Dcamunda.grpc-address=MAIN
           resources:
             limits:
               cpu: "1"

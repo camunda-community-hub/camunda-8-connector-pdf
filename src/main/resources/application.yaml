@@ -1,13 +1,8 @@
 # Configuration for running connectors in bundle with connector-runtime
+# This application YAML connect a local cluster
 
-# Cloud connection
-# zeebe.client.cloud:
-#    region=bru-2
-#    clusterId=xxx
-#    clientId=xxx
-#    clientSecret=xxx
-
-# ------------------------------------ 8.8
+# local connection
+# ------------------- 8.8
 camunda:
   client:
     mode: self-managed
@@ -31,13 +26,10 @@ camunda:
     tasklist:
       enabled: false
 
-
 # Don't run the connection to Operate (not an inbound connection)
 camunda.connector.polling.enabled: false
 camunda.connector.webhook.enabled: false
 spring.main.web-application-type: none
 operate.client.enabled: false
 
-spring:
-  main:
-    allow-bean-definition-overriding: true
+
