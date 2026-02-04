@@ -21,8 +21,8 @@
 
 
         <!-- connector SDK version -->
-        <!-- connector SDK version -->
-        <version.connector>8.8.9</version.connector>
+        <!-- connector SDK version 8.8.7 / 8.7.8-->
+        <version.connector>8.8.7</version.connector>
         <version.chemistry>1.1.0</version.chemistry>
 
 
@@ -30,14 +30,8 @@
         <version.filestorage>2.3.0</version.filestorage>
 
         <!-- external libraries -->
-        <version.assertj>3.25.3</version.assertj>
-        <version.junit-jupiter>5.10.2</version.junit-jupiter>
-        <version.mockito>5.11.0</version.mockito>
         <version.slf4j>2.0.12</version.slf4j>
         <version.jackson>2.17.0</version.jackson>
-
-
-        <!-- external libraries -->
         <version.assertj>3.27.3</version.assertj>
         <version.junit-jupiter>5.12.1</version.junit-jupiter>
         <version.mockito>5.16.1</version.mockito>
@@ -52,7 +46,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.5</version> <!-- Example: set your intended version -->
+        <version>3.5.10</version> <!-- Example: set your intended version -->
     </parent>
 
 
@@ -148,13 +142,34 @@
         </dependency>
 
         <!-- to generate the element-template -->
+        <!-- execute io.camunda.pdf.DocumentationGenerator
         <dependency>
             <groupId>io.camunda.community</groupId>
             <artifactId>zeebe-cherry-runtime</artifactId>
             <version>3.4.0</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.camunda.connector</groupId>
+                    <artifactId>connector-runtime-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.camunda.connector</groupId>
+                    <artifactId>spring-boot-starter-camunda-connectors</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.camunda.connector</groupId>
+                    <artifactId>connector-runtime-spring</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.camunda</groupId>
+                    <artifactId>spring-boot-starter-camunda-sdk</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+        -->
     </dependencies>
+
 
     <build>
         <plugins>

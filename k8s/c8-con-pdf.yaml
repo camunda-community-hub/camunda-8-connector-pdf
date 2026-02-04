@@ -20,39 +20,23 @@ spec:
     spec:
       containers:
         - name: c8-con-pdf
-          image: ghcr.io/camunda-community-hub/process-execution-automator:latest
+          image: ghcr.io/camunda-community-hub/c8-con-pdf:latest
           imagePullPolicy: Always
           env:
-            - name: JAVA_TOOL_OPTIONS
-              value: >-
-                -Dautomator.startup.serverName=Camunda8Calcair
-                -Dautomator.servers.camunda8.name=Camunda8Calcair
-                -Dautomator.servers.camunda8.zeebeGrpcAddress=http://camunda-zeebe-gateway:26500
-                -Dautomator.servers.camunda8.operateUrl=http://camunda-operate:80
-                -Dautomator.servers.camunda8.operateUserName=demo
-                -Dautomator.servers.camunda8.operateUserPassword=demo
-                -Dautomator.servers.camunda8.taskListUrl=http://camunda-tasklist:80
-                -Dautomator.servers.camunda8.taskListUserName=demo
-                -Dautomator.servers.camunda8.taskListUserPassword=demo
-                -Dautomator.servers.camunda8.workerExecutionThreads=2000
-                -Dautomator.startup.logLevel=MAIN
+            - name: CONNECTOR_PDF_FUNCTION
+              value: io.camunda.connector.pdf.PdfFunction
+            - name: CONNECTOR_PDF_TYPE
+              value: c-pdf-function
+            - name: CAMUNDA_CLIENT_MODE
+              value: selfManaged
+            - name: CAMUNDA_CLIENT_GRPCADDRESS
+              value: http://camunda-zeebe-gateway:26500
+
+
           resources:
             limits:
               cpu: "1"
-              memory: 2Gi
+              memory: 512M
             requests:
               cpu: "1"
-              memory: 1Gi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: pea-service
-spec:
-  selector:
-    app: pea
-  ports:
-    - protocol: TCP
-      port: 8381
-      targetPort: 8381
-  type: ClusterIP
+              memory: 512M

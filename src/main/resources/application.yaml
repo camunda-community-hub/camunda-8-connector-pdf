@@ -1,18 +1,13 @@
 # Configuration for running connectors in bundle with connector-runtime
+# This application YAML connect a local cluster
 
-# Cloud connection
-# zeebe.client.cloud:
-#    region=bru-2
-#    clusterId=xxx
-#    clientId=xxx
-#    clientSecret=xxx
-
-# ------------------------------------ 8.8
+# local connection
+# ------------------- 8.8
 camunda:
   client:
     mode: self-managed
     prefer-rest-over-grpc: false
-    grpc-address: http://localhost:26500
+    grpc-address: http://camunda-zeebe-gateway:26500
     request-timeout: PT25S
     execution-threads: 32
 
@@ -20,9 +15,9 @@ camunda:
       defaults:
         max-jobs-active: 32
         stream-enabled: true
-
     auth:
       method: none
+
 
 
     operate:
@@ -30,9 +25,10 @@ camunda:
     tasklist:
       enabled: false
 
-
 # Don't run the connection to Operate (not an inbound connection)
 camunda.connector.polling.enabled: false
 camunda.connector.webhook.enabled: false
 spring.main.web-application-type: none
 operate.client.enabled: false
+
+
