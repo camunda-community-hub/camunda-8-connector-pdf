@@ -7,7 +7,7 @@ camunda:
   client:
     mode: self-managed
     prefer-rest-over-grpc: false
-    grpc-address: http://localhost:26500
+    grpc-address: http://camunda-zeebe-gateway:26500
     request-timeout: PT25S
     execution-threads: 32
 
@@ -15,7 +15,6 @@ camunda:
       defaults:
         max-jobs-active: 32
         stream-enabled: true
-
     auth:
       method: none
 

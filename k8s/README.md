@@ -13,16 +13,17 @@ kubectl create -f c8-con-pdf.yaml
 The simple way to connect to a different cluster is to set variables in the pod, as an environment variables.
 To change the gatewayUrl, use in the YAML file
 
-> Image currently use 8.7.x API. The configuration change between 8.7 and 8.8
  
 
 ```yaml
           env:
-            - name: JAVA_TOOL_OPTIONS
-              value: >-
-                -Dcamunda.client.zeebe.gatewayUrl=http://myserver:26500
+            - name: CAMUNDA_CLIENT_MODE
+              value: selfManaged
+            - name: CAMUNDA_CLIENT_GRPCADDRESS
+              value: http://camunda-zeebe-gateway:26500
 
 ```
+
 The default configuration connect to a local self-manage cluster, assuming the connector is deployed in the same cluster.
 
 Visit
@@ -34,11 +35,12 @@ To deploy using a basic authentication, add
 
 ```yaml
           env:
-            - name: JAVA_TOOL_OPTIONS
-              value: >-
-                -Dcamunda.client.auth.method=basic
-                -Dcamunda.client.auth.username=<your username>
-                -Dcamunda.client.auth.password=<your password>
+            - name: CAMUNDA_CLIENT_AUTH_METHOD
+              value: basic
+            - name: CAMUNDA_CLIENT_AUTH_USERNAME
+              value: <your user name>
+            - name: CAMUNDA_CLIENT_AUTH_PASSWORD
+              value: <your password name>
 ```
 
 
@@ -75,6 +77,7 @@ Push the image to the Camunda hub (you must be login first to the docker registr
 docker tag pierre-yves-monnet/c8-con-pdf:3.1.0 ghcr.io/camunda-community-hub/c8-con-pdf:3.1.0
 docker push ghcr.io/camunda-community-hub/c8-con-pdf:3.1.0
 ```
+
 Tag as the latest:
 
 ```

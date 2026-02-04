@@ -23,26 +23,20 @@ spec:
           image: ghcr.io/camunda-community-hub/c8-con-pdf:latest
           imagePullPolicy: Always
           env:
-            - name: JAVA_TOOL_OPTIONS
-              value: >-
-                -Dcamunda.grpc-address=MAIN
+            - name: CONNECTOR_PDF_FUNCTION
+              value: io.camunda.connector.pdf.PdfFunction
+            - name: CONNECTOR_PDF_TYPE
+              value: c-pdf-function
+            - name: CAMUNDA_CLIENT_MODE
+              value: selfManaged
+            - name: CAMUNDA_CLIENT_GRPCADDRESS
+              value: http://camunda-zeebe-gateway:26500
+
+
           resources:
             limits:
               cpu: "1"
-              memory: 2Gi
+              memory: 512M
             requests:
               cpu: "1"
-              memory: 1Gi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: pea-service
-spec:
-  selector:
-    app: pea
-  ports:
-    - protocol: TCP
-      port: 8381
-      targetPort: 8381
-  type: ClusterIP
+              memory: 512M

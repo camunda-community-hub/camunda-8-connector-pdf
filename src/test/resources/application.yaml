@@ -25,7 +25,6 @@ camunda:
       method: none
 
 
-
     operate:
       enabled: false
     tasklist:
@@ -37,7 +36,3 @@ camunda.connector.polling.enabled: false
 camunda.connector.webhook.enabled: false
 spring.main.web-application-type: none
 operate.client.enabled: false
-
-spring:
-  main:
-    allow-bean-definition-overriding: true
