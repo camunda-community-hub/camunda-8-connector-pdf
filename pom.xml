@@ -12,7 +12,8 @@
     <!-- 2.0.2 reformat the code -->
     <!-- 3.0.0 Use the FileStorage 2.3.0 -->
     <!-- 3.1.0 use 8.8.9 version -->
-    <version>3.1.0</version>
+    <!-- 3.1.1 fix issue when input document are URL document -->
+    <version>3.1.1</version>
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
@@ -21,13 +22,13 @@
 
 
         <!-- connector SDK version -->
-        <!-- connector SDK version 8.8.7 / 8.7.8-->
+        <!-- connector SDK version 8.8.7 / 8.7.8 -->
         <version.connector>8.8.7</version.connector>
         <version.chemistry>1.1.0</version.chemistry>
 
 
         <version.opensagres>2.0.4</version.opensagres>
-        <version.filestorage>2.3.0</version.filestorage>
+        <version.filestorage>2.5.0</version.filestorage>
 
         <!-- external libraries -->
         <version.slf4j>2.0.12</version.slf4j>
@@ -38,7 +39,6 @@
         <java.version>21</java.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-
     </properties>
 
     <!-- Push the library to Maven -->
@@ -60,9 +60,13 @@
             <groupId>io.camunda.connector</groupId>
             <artifactId>connector-core</artifactId>
             <version>${version.connector}</version>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>  -->
         </dependency>
-
+        <dependency>
+            <groupId>io.camunda.connector</groupId>
+            <artifactId>connector-runtime-core</artifactId>
+            <version>${version.connector}</version>
+        </dependency>
 
         <dependency>
             <groupId>io.camunda.filestorage</groupId>
@@ -134,14 +138,17 @@
 
 
         <!-- for testing connectors locally in bundle with runtime -->
+
+
         <dependency>
             <groupId>io.camunda.connector</groupId>
             <artifactId>spring-boot-starter-camunda-connectors</artifactId>
             <version>${version.connector}</version>
-            <scope>test</scope>
+<!--            <scope>test</scope> -->
         </dependency>
 
         <!-- to generate the element-template -->
+
         <dependency>
             <groupId>io.camunda.community</groupId>
             <artifactId>zeebe-cherry-runtime</artifactId>
@@ -149,35 +156,18 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- to generate the element-template -->
-        <!-- execute io.camunda.pdf.DocumentationGenerator
-        <dependency>
-            <groupId>io.camunda.community</groupId>
-            <artifactId>zeebe-cherry-runtime</artifactId>
-            <version>3.4.0</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.camunda.connector</groupId>
-                    <artifactId>connector-runtime-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.camunda.connector</groupId>
-                    <artifactId>spring-boot-starter-camunda-connectors</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.camunda.connector</groupId>
-                    <artifactId>connector-runtime-spring</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.camunda</groupId>
-                    <artifactId>spring-boot-starter-camunda-sdk</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        -->
     </dependencies>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.camunda</groupId>
+                <artifactId>camunda-bom</artifactId>
+                <version>8.8.0</version>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <plugins>
@@ -193,12 +183,16 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 
     <repositories>
-
+        <!--
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        -->
 
         <repository>
             <releases>

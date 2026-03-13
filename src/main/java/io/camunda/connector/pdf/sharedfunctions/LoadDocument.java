@@ -58,8 +58,8 @@ public class LoadDocument {
     try {
       FileVariable docSource = fileRepoFactory.loadFileVariable(docReference,outboundConnectorContext);
 
-      // get the file
-      if (docSource == null || docSource.getValue() == null) {
+      // get the file - don't get any value here, because in a Stream approach, we don't ant to consu;eteh stream
+      if (docSource == null || (docSource.isValueBytes() && docSource.getValue()==null)) {
         throw new ConnectorException(ERROR_LOAD_ERROR,
             PdfToolbox.getLogSignature(subFunction) + "Can't read file [" + docReference.toJson() + "]");
       }

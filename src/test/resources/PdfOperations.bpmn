@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0939qu9" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.27.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.0.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0939qu9" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.45.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.0.0">
   <bpmn:collaboration id="Collaboration_1v5nw3b">
     <bpmn:participant id="Participant_0edqg9w" name="Operation on PDF" processRef="OperationOnPDF" />
   </bpmn:collaboration>
@@ -15,9 +15,6 @@
     </bpmn:userTask>
     <bpmn:endEvent id="Event_018jqrj" name="Youpie">
       <bpmn:incoming>Flow_1lllhjt</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:endEvent id="Event_0qsiz0n" name="Too long">
-      <bpmn:incoming>Flow_1ozq1f5</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:boundaryEvent id="Event_1s7c15t" name="30 mn" attachedToRef="Activity_ReviewDocument">
       <bpmn:outgoing>Flow_1ozq1f5</bpmn:outgoing>
@@ -58,16 +55,16 @@
         <zeebe:taskDefinition type="c-pdf-function" />
         <zeebe:ioMapping>
           <zeebe:input source="extract-pages" target="pdfFunction" />
-          <zeebe:input source="2-4,6,10-n" target="extractExpression" />
           <zeebe:input source="=&#34;{ \&#34;storageDefinition\&#34;: \&#34;URL\&#34;, \&#34;content\&#34;: \&#34;https://github.com/camunda-community-hub/camunda-8-connector-pdf/raw/main/src/test/resources/BPMN%202.0%20Symbols.pdf\&#34;}&#34;" target="sourceFile" />
+          <zeebe:input source="2-4,6,10-n" target="extractExpression" />
+          <zeebe:input source="=&#34;pdfOperation_Extracted.pdf&#34;" target="destinationFileName" />
+          <zeebe:input source="true" target="destinationStorageDefinition_optional" />
           <zeebe:input source="TEMPFOLDER" target="destinationStorageDefinition" />
-          <zeebe:input source="= &#34;pdfOperation_Extracted.pdf&#34;" target="destinationFileName" />
-          <zeebe:input source="true" target="destinationFile_optional" />
           <zeebe:output source="= result.destinationFile" target="docExtracted" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
-          <zeebe:header key="Result Variable" value="result" />
-          <zeebe:header key="ERROR_EXPRESSION_KEYWORD" value="if is defined(error) then bpmnError(error.code, error.message) else null" />
+          <zeebe:header key="resultVariable" value="result" />
+          <zeebe:header key="errorExpression" value="if is defined(error) then bpmnError(error.code, error.message) else null" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0n7ujja</bpmn:incoming>
@@ -80,7 +77,8 @@
           <zeebe:input source="true" target="listSourceFile_optional" />
           <zeebe:input source="=[ &#34;{ \&#34;storageDefinition\&#34;: \&#34;URL\&#34;, \&#34;content\&#34;: \&#34;https://github.com/camunda-community-hub/camunda-8-connector-pdf/raw/main/src/test/resources/DocHeader.pdf\&#34;}&#34;,&#34;{ \&#34;storageDefinition\&#34;: \&#34;URL\&#34;, \&#34;content\&#34;: \&#34;https://github.com/camunda-community-hub/camunda-8-connector-pdf/raw/main/src/test/resources/BPMN%202.0%20Symbols.pdf\&#34;}&#34;]" target="listSourceFile" />
           <zeebe:input source="= &#34;pdfOperation_Merge.pdf&#34;" target="destinationFileName" />
-          <zeebe:input source="false" target="destinationStorageDefinition_optional" />
+          <zeebe:input source="true" target="destinationStorageDefinition_optional" />
+          <zeebe:input source="TEMPFOLDER" target="destinationStorageDefinition" />
           <zeebe:output source="= result.destinationFile" target="docMerged" />
         </zeebe:ioMapping>
         <zeebe:taskDefinition type="c-pdf-function" />
@@ -96,22 +94,21 @@
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="c-pdf-function" />
         <zeebe:ioMapping>
-          <zeebe:input source="Draft" target="watermark" />
           <zeebe:input source="watermark" target="pdfFunction" />
           <zeebe:input source="=&#34;{ \&#34;storageDefinition\&#34;: \&#34;URL\&#34;, \&#34;content\&#34;: \&#34;https://github.com/camunda-community-hub/camunda-8-connector-pdf/raw/main/src/test/resources/BPMN%202.0%20Symbols.pdf\&#34;}&#34;" target="sourceFile" />
           <zeebe:input source="draft" target="waterMark" />
           <zeebe:input source="CENTER" target="watermarkPosition" />
-          <zeebe:input source="blue" target="watermarkColor" />
-          <zeebe:input source="45" target="watermarkRotation" />
-          <zeebe:input source="120" target="watermarkFontHeight" />
+          <zeebe:input source="false" target="watermarkColor_optional" />
+          <zeebe:input source="false" target="watermarkRotation_optional" />
+          <zeebe:input source="false" target="watermarkFontHeight_optional" />
           <zeebe:input source="= &#34;pdfOperation_Watermark.pdf&#34;" target="destinationFileName" />
+          <zeebe:input source="true" target="destinationStorageDefinition_optional" />
           <zeebe:input source="TEMPFOLDER" target="destinationStorageDefinition" />
-          <zeebe:input source="true" target="destinationFile_optional" />
           <zeebe:output source="= result.destinationFile" target="docWatermark" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
-          <zeebe:header key="Result Variable" value="result" />
-          <zeebe:header key="ERROR_EXPRESSION_KEYWORD" value="if is defined(error) then bpmnError(error.code, error.message) else null" />
+          <zeebe:header key="resultVariable" value="result" />
+          <zeebe:header key="errorExpression" value="if is defined(error) then bpmnError(error.code, error.message) else null" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1muf5cj</bpmn:incoming>
@@ -124,15 +121,15 @@
         <zeebe:taskDefinition type="c-pdf-function" />
         <zeebe:ioMapping>
           <zeebe:input source="image-to-pdf" target="pdfFunction" />
-          <zeebe:input source="=[&#34;{ \&#34;storageDefinition\&#34;: \&#34;URL\&#34;, \&#34;content\&#34;: \&#34;https://github.com/camunda-community-hub/camunda-8-connector-pdf/raw/main/src/test/resources/Grenoble.jpg\&#34;}&#34;,&#34;{ \&#34;storageDefinition\&#34;: \&#34;URL\&#34;, \&#34;content\&#34;: \&#34;https://github.com/camunda-community-hub/camunda-8-connector-pdf/raw/main/src/test/resources/Mont-Saint-Michel.jpg\&#34;}&#34;,&#34;{ \&#34;storageDefinition\&#34;: \&#34;URL\&#34;, \&#34;content\&#34;: \&#34;https://github.com/camunda-community-hub/camunda-8-connector-pdf/raw/main/src/test/resources/Sienna.jpg\&#34;}&#34;,&#34;{ \&#34;storageDefinition\&#34;: \&#34;URL\&#34;, \&#34;content\&#34;: \&#34;https://github.com/camunda-community-hub/camunda-8-connector-pdf/raw/main/src/test/resources/Sienna.jpg\&#34;}&#34;,&#34;{ \&#34;storageDefinition\&#34;: \&#34;URL\&#34;, \&#34;content\&#34;: \&#34;https://github.com/camunda-community-hub/camunda-8-connector-pdf/raw/main/src/test/resources/Alpes-Huez.jpg\&#34;}&#34;]" target="listSourceFile" />
+          <zeebe:input source="false" target="listSourceFile_optional" />
           <zeebe:input source="= &#34;pdfOperation_ImageToPdf.pdf&#34;" target="destinationFileName" />
+          <zeebe:input source="true" target="destinationStorageDefinition_optional" />
           <zeebe:input source="TEMPFOLDER" target="destinationStorageDefinition" />
-          <zeebe:input source="true" target="destinationFile_optional" />
           <zeebe:output source="= result.destinationFile" target="docImageToPdf" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
-          <zeebe:header key="Result Variable" value="result" />
-          <zeebe:header key="ERROR_EXPRESSION_KEYWORD" value="if is defined(error) then bpmnError(error.code, error.message) else null" />
+          <zeebe:header key="resultVariable" value="result" />
+          <zeebe:header key="errorExpression" value="if is defined(error) then bpmnError(error.code, error.message) else null" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_03gb0rt</bpmn:incoming>
@@ -171,15 +168,16 @@
         <zeebe:ioMapping>
           <zeebe:input source="pdf-to-images" target="pdfFunction" />
           <zeebe:input source="=&#34;{ \&#34;storageDefinition\&#34;: \&#34;URL\&#34;, \&#34;content\&#34;: \&#34;https://github.com/camunda-community-hub/camunda-8-connector-pdf/raw/main/src/test/resources/BPMN%202.0%20Symbols.pdf\&#34;}&#34;" target="sourceFile" />
-          <zeebe:input source="300" target="dpi" />
+          <zeebe:input source="1-n" target="extractExpression" />
+          <zeebe:input source="false" target="dpi_optional" />
           <zeebe:input source="= &#34;pdfOperation_PdfToImage.pdf&#34;" target="destinationFileName" />
+          <zeebe:input source="true" target="destinationStorageDefinition_optional" />
           <zeebe:input source="TEMPFOLDER" target="destinationStorageDefinition" />
-          <zeebe:input source="true" target="listDestinationFile_optional" />
           <zeebe:output source="= result.listDestinationFile" target="listImages" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
-          <zeebe:header key="Result Variable" value="result" />
-          <zeebe:header key="ERROR_EXPRESSION_KEYWORD" value="if is defined(error) then bpmnError(error.code, error.message) else null" />
+          <zeebe:header key="resultVariable" value="result" />
+          <zeebe:header key="errorExpression" value="if is defined(error) then bpmnError(error.code, error.message) else null" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0fda2w5</bpmn:incoming>
@@ -193,6 +191,9 @@
       <bpmn:outgoing>Flow_03gb0rt</bpmn:outgoing>
       <bpmn:outgoing>Flow_0fda2w5</bpmn:outgoing>
     </bpmn:parallelGateway>
+    <bpmn:endEvent id="Event_0qsiz0n" name="Too long">
+      <bpmn:incoming>Flow_1ozq1f5</bpmn:incoming>
+    </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1v5nw3b">
@@ -210,9 +211,9 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0qsiz0n_di" bpmnElement="Event_0qsiz0n">
-        <dc:Bounds x="962" y="222" width="36" height="36" />
+        <dc:Bounds x="982" y="222" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="960" y="265" width="41" height="14" />
+          <dc:Bounds x="980" y="265" width="42" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_01a95lk_di" bpmnElement="Activity_09p0gfk" isExpanded="true">
@@ -321,7 +322,7 @@
       <bpmndi:BPMNEdge id="Flow_1ozq1f5_di" bpmnElement="Flow_1ozq1f5">
         <di:waypoint x="890" y="175" />
         <di:waypoint x="890" y="240" />
-        <di:waypoint x="962" y="240" />
+        <di:waypoint x="982" y="240" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0n7ujja_di" bpmnElement="Flow_0n7ujja">
         <di:waypoint x="335" y="117" />
