@@ -66,7 +66,7 @@ The docker image is build using the Dockerfile present on the root level.
 
 Push the image to
 ```
-docker build -t pierre-yves-monnet/c8-con-pdf:3.1.1 .
+docker build -t pierre-yves-monnet/c8-con-pdf:3.1.2 .
 ```
 
 ## Push in Camunda hub
@@ -74,14 +74,14 @@ docker build -t pierre-yves-monnet/c8-con-pdf:3.1.1 .
 Push the image to the Camunda hub (you must be login first to the docker registry)
 
 ```
-docker tag pierre-yves-monnet/c8-con-pdf:3.1.1 ghcr.io/camunda-community-hub/c8-con-pdf:3.1.1
-docker push ghcr.io/camunda-community-hub/c8-con-pdf:3.1.1
+docker tag pierre-yves-monnet/c8-con-pdf:3.1.2 ghcr.io/camunda-community-hub/c8-con-pdf:3.1.2
+docker push ghcr.io/camunda-community-hub/c8-con-pdf:3.1.2
 ```
 
 Tag as the latest:
 
 ```
-docker tag pierre-yves-monnet/c8-con-pdf:3.1.1 ghcr.io/camunda-community-hub/c8-con-pdf:latest
+docker tag pierre-yves-monnet/c8-con-pdf:3.1.2 ghcr.io/camunda-community-hub/c8-con-pdf:latest
 docker push ghcr.io/camunda-community-hub/c8-con-pdf:latest
 ```
 

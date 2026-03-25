@@ -31,6 +31,8 @@ spec:
               value: selfManaged
             - name: CAMUNDA_CLIENT_GRPCADDRESS
               value: http://camunda-zeebe-gateway:26500
+            - name: LOGGING_LEVEL_IO_CAMUNDA_CONNECTOR_PDF_PDFTOIMAGE
+              value: DEBUG
 
 
           resources:
