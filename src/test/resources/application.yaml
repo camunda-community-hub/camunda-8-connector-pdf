@@ -36,3 +36,7 @@ camunda.connector.polling.enabled: false
 camunda.connector.webhook.enabled: false
 spring.main.web-application-type: none
 operate.client.enabled: false
+
+logging:
+  level:
+    io.camunda.connector.pdf.pdftoimage: DEBUG

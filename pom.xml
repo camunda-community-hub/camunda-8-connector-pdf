@@ -13,7 +13,8 @@
     <!-- 3.0.0 Use the FileStorage 2.3.0 -->
     <!-- 3.1.0 use 8.8.9 version -->
     <!-- 3.1.1 fix issue when input document are URL document -->
-    <version>3.1.1</version>
+    <!-- 3.1.2 Add debug log on pdf2image function -->
+    <version>3.1.2</version>
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
