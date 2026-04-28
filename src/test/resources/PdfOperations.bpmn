@@ -161,7 +161,8 @@
           <zeebe:input source="pdf-to-images" target="pdfFunction" />
           <zeebe:input source="=&#34;{ \&#34;storageDefinition\&#34;: \&#34;URL\&#34;, \&#34;content\&#34;: \&#34;https://github.com/camunda-community-hub/camunda-8-connector-pdf/raw/main/src/test/resources/BPMN%202.0%20Symbols.pdf\&#34;}&#34;" target="sourceFile" />
           <zeebe:input source="1-n" target="extractExpression" />
-          <zeebe:input source="false" target="dpi_optional" />
+          <zeebe:input source="true" target="dpi_optional" />
+          <zeebe:input source="=100" target="dpi" />
           <zeebe:input source="= &#34;pdfOperation_PdfToImage.pdf&#34;" target="destinationFileName" />
           <zeebe:input source="true" target="destinationStorageDefinition_optional" />
           <zeebe:input source="TEMPFOLDER" target="destinationStorageDefinition" />
@@ -209,9 +210,6 @@
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1024" y="142" width="33" height="14" />
         </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0c9uac6_di" bpmnElement="Gateway_0oiub51">
-        <dc:Bounds x="635" y="92" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_01a95lk_di" bpmnElement="Activity_09p0gfk" isExpanded="true">
         <dc:Bounds x="865" y="330" width="350" height="200" />
@@ -300,6 +298,9 @@
         <bpmndi:BPMNLabel>
           <dc:Bounds x="980" y="265" width="42" height="14" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0c9uac6_di" bpmnElement="Gateway_0oiub51">
+        <dc:Bounds x="635" y="92" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_08tb3rt_di" bpmnElement="Event_1s7c15t">
         <dc:Bounds x="872" y="139" width="36" height="36" />

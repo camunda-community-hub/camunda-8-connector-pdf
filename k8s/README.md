@@ -1,4 +1,4 @@
-# Kubernetes image
+./# Kubernetes image
 
 # Deploy
 
@@ -12,7 +12,6 @@ kubectl create -f c8-con-pdf.yaml
 
 The simple way to connect to a different cluster is to set variables in the pod, as an environment variables.
 To change the gatewayUrl, use in the YAML file
-
  
 
 ```yaml

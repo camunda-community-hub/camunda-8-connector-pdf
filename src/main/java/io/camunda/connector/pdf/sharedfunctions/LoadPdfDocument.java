@@ -8,6 +8,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
 public class LoadPdfDocument {
@@ -35,7 +36,11 @@ public class LoadPdfDocument {
       throws ConnectorException {
     PDDocument sourceDocument;
     try {
-      sourceDocument = PDDocument.load(sourceFileVariable.getValue());
+      logger.debug("{} Start load Source[{}]",PdfToolbox.getLogSignature(subFunction),  sourceFileVariable.getName());
+      byte[] documentBytes = sourceFileVariable.getValue();
+      logger.debug("{} Document loaded size[{}], start Load PDF", PdfToolbox.getLogSignature(subFunction), documentBytes.length);
+      sourceDocument = PDDocument.load(documentBytes);
+      logger.debug("{} PDF loaded",PdfToolbox.getLogSignature(subFunction));
 
     } catch (Exception e) {
       logger.error("{} Load PDF document : {} ", PdfToolbox.getLogSignature(subFunction), e);

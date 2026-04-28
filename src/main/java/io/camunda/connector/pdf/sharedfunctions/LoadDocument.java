@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 public class LoadDocument {
-  private static final Logger logger = LoggerFactory.getLogger(LoadDocument.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(LoadDocument.class);
 
   private static final String ERROR_LOAD_DOCSOURCE = "LOAD_DOCSOURCE";
   private static final String ERROR_LOAD_DOCSOURCE_LABEL = "The reference can't be decoded";
@@ -41,6 +41,7 @@ public class LoadDocument {
                                            OutboundConnectorContext outboundConnectorContext) {
     try {
       FileVariableReference docSourceReference = FileVariableReference.fromObject(sourceFile);
+      logger.debug("{} SourceFile {}", PdfToolbox.getLogSignature(subFunction), docSourceReference.toJson());
       return loadDocSourceFromReference(docSourceReference, fileRepoFactory, subFunction,outboundConnectorContext);
     } catch (ConnectorException ce) {
       throw ce;

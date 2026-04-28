@@ -59,7 +59,7 @@ public class PdfToImageFunction implements PdfSubFunction {
         try {
             FileVariable docSource = LoadDocument.loadDocSource(pdfInput.getSourceFile(), fileRepoFactory, this, outboundConnectorContext);
 
-            logger.info("{} Document[{}]  Start PdfToImages", PdfToolbox.getLogSignature(this), docSource.getName());
+            logger.info("{} Document[{}] Start PdfToImages", PdfToolbox.getLogSignature(this), docSource.getName());
 
             StorageDefinition destinationStorageDefinition = RetrieveStorageDefinition.getStorageDefinition(pdfInput,
                     docSource, true, this);
@@ -88,13 +88,17 @@ public class PdfToImageFunction implements PdfSubFunction {
                 // Render PDF page to BufferedImage
                 logger.debug("{} Document[{}] Start render page [{}/{}] at [{}] dpi", PdfToolbox.getLogSignature(this), docSource.getName(),
                         pageIndex+1,
-                        docSourcePDF.getNumberOfPages(),pdfInput.getDpi());
+                        docSourcePDF.getNumberOfPages(),
+                        pdfInput.getDpi());
 
                 BufferedImage image = pdfRenderer.renderImageWithDPI(pageIndex, pdfInput.getDpi()); // 300 DPI
                 long timeStep1Rendering = System.currentTimeMillis();
 
                 // Convert BufferedImage to byte array
-                logger.debug("{} Document[{}] Start write image hxw [{}x{}]", PdfToolbox.getLogSignature(this), docSource.getName(), image.getHeight(), image.getWidth());
+                logger.debug("{} Document[{}] Start write page [{}/{}] image hxw [{}x{}]", PdfToolbox.getLogSignature(this), docSource.getName(),
+                        pageIndex+1,
+                        docSourcePDF.getNumberOfPages(),
+                        image.getHeight(), image.getWidth());
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 ImageIO.write(image, "png", baos);
@@ -106,16 +110,20 @@ public class PdfToImageFunction implements PdfSubFunction {
                 fileVariableOut.setValue(baos.toByteArray());
                 fileVariableOut.setName(PdfToolbox.getDocumentName(docSource, true) + "_" + (pageIndex + 1) + ".png");
                 fileVariableOut.setStorageDefinition(destinationStorageDefinition);
-                logger.debug("{} Document[{}] Start save file to storage[{}]", PdfToolbox.getLogSignature(this), docSource.getName(), destinationStorageDefinition.getInformation());
+                logger.debug("{} Document[{}] Page [{}/{}] Start save file to storage[{}]", PdfToolbox.getLogSignature(this), docSource.getName(),
+                        pageIndex+1,
+                        docSourcePDF.getNumberOfPages(),
+                        destinationStorageDefinition.getInformation());
 
                 SavePdfDocument.saveFile(pdfOutput, fileVariableOut, fileRepoFactory, this, outboundConnectorContext);
 
                 long timeStep3WriteFile = System.currentTimeMillis();
-                logger.info("{} Document[{}] Page [{}/{}] Render {} ms, WriteImage {} ms, WriteFile {} ms imageSize {} Ko",
+                logger.info("{} Document[{}] Page [{}/{}] Render {} ms, DPI[{}] WriteImage {} ms, WriteFile {} ms imageSize {} Ko",
                         PdfToolbox.getLogSignature(this),
                         docSource.getName(),
                         (pageIndex + 1), docSourcePDF.getNumberOfPages(),
                         timeStep1Rendering - timeStep0Begin, // Rendering
+                        pdfInput.getDpi(),
                         timeStep2WriteToByte - timeStep1Rendering, // Write Image
                         timeStep3WriteFile - timeStep2WriteToByte, imageData.length / 1024); // Save Image
             } // end loop each page
