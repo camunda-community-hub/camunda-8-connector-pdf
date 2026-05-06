@@ -15,6 +15,7 @@
     <!-- 3.1.1 fix issue when input document are URL document -->
     <!-- 3.1.2 Add debug log on pdf2image function -->
     <!-- 3.1.3 Add more debug log -->
+    <!-- 3.1.4 Banner.txt dynamic version - not publish -->
     <version>3.1.3</version>
 
     <properties>
@@ -172,6 +173,14 @@
     </dependencyManagement>
 
     <build>
+        <resources>
+            <!-- Solve the project.version in the banner.txt -->
+            <!-- spring-boot-starter-parent : delimiter is @@ -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
