@@ -73,22 +73,6 @@ public class SavePdfDocument {
       // Second, write it to the fileRepo
       FileVariableReference outputFileReference = fileRepoFactory.saveFileVariable(fileVariableOut, outboundConnectorContext);
 
-      // je triche : on renome le fichier
-
-      String fileNameToRename= outputFileReference.content.toString();
-      File oldFile = new File("c:/temp/unzip/result/" + fileNameToRename);
-      int index = fileNameToRename.indexOf(" - [");
-      String newFileName = fileNameToRename;
-      if (index != -1) {
-        newFileName = fileNameToRename.substring(0, index)+".pdf";
-      } else {
-        index = fileNameToRename.indexOf(".pdf");
-        newFileName = fileNameToRename.substring(0, index)+".pdf";
-      }
-      // New file name in the same directory
-      File newFile = new File("c:/temp/unzip/result/" +newFileName);
-      // Rename the file
-      boolean success = oldFile.renameTo(newFile);
 
       pdfOutput.destinationFile = outputFileReference.toJson();
       return pdfOutput;
