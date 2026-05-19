@@ -16,7 +16,8 @@
     <!-- 3.1.2 Add debug log on pdf2image function -->
     <!-- 3.1.3 Add more debug log -->
     <!-- 3.1.4 Banner.txt dynamic version - not publish -->
-    <version>3.1.3</version>
+    <!-- 3.1.5 ZeebeStorage 2.5.1 and stop to write on temp folder to trace -->
+    <version>3.1.5</version>
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
@@ -31,7 +32,7 @@
 
 
         <version.opensagres>2.0.4</version.opensagres>
-        <version.filestorage>2.5.0</version.filestorage>
+        <version.filestorage>2.5.1</version.filestorage>
 
         <!-- external libraries -->
         <version.slf4j>2.0.12</version.slf4j>
