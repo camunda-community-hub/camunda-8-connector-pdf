@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
-  "name": "Pdf function",
+  "name": "PdfFunction",
   "id": "io.camunda.connector.pdf.PdfFunction",
   "description": "Different PDF functions available: Extract pages in a PDF, and produce a PDF,Merge two PDFs document in one PDF,Add a watermark,From one or a list of image, return a PDF,Return a list of images, one per page",
   "documentationRef": "https://docs.camunda.io/docs/components/modeler/web-modeler/connectors/available-connectors/template/",
