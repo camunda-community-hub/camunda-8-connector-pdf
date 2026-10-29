@@ -152,8 +152,24 @@
         <dependency>
             <groupId>io.camunda.community</groupId>
             <artifactId>zeebe-cherry-runtime</artifactId>
-            <version>3.4.0</version>
+            <version>3.5.2</version>
             <scope>test</scope>
+            <exclusions>
+                <!-- zeebe-cherry-runtime drags in an entire old (Camunda 8.8.7-era) dependency graph -
+                     old Spring Boot, Micrometer, gRPC/Netty, Jackson, etc. Being declared before
+                     spring-boot-starter-camunda-connectors below, those old versions kept winning Maven's
+                     same-depth tie-break one at a time (NoClassDefFoundError on
+                     MeteredCamundaClientExecutorService, then FeelEngineWrapper, then a Micrometer/JVM
+                     metrics class...). LocalConnectorRuntime is a plain @SpringBootApplication that never
+                     touches zeebe-cherry-runtime's own runtime classes - it only needs this dependency for
+                     a few generator classes (see ElementTemplateGenerator/DocumentationGenerator), which
+                     compile fine against the versions declared explicitly above - so exclude everything
+                     transitive instead of chasing conflicts one by one. -->
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>
@@ -179,6 +195,20 @@
             </resource>
         </resources>
         <plugins>
+            <!-- The two generators under src/test/java/io/camunda/pdf need zeebe-cherry-runtime, which is
+                 not resolvable in CI (artifacts.camunda.com answers 401). They are excluded from the
+                 default test compilation and restored by the generate-docs profile. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <testExcludes>
+                        <testExclude>io/camunda/pdf/DocumentationGenerator.java</testExclude>
+                        <testExclude>io/camunda/pdf/ElementTemplateGenerator.java</testExclude>
+                    </testExcludes>
+                </configuration>
+            </plugin>
             <!-- spring-boot-starter-parent auto-binds spring-boot-maven-plugin's "repackage" goal
                  to the package phase, which fat-ifies the main artifact and renames the original
                  thin jar to original-*.jar - independently of, and conflicting with, the
