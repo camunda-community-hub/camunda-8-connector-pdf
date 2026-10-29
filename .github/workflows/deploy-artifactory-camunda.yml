@@ -1,0 +1,41 @@
+name: deploy-artifactory-camunda
+
+# Deploys the jar (and the -with-dependencies jar) to this project's own JFrog Artifactory repo
+# ONLY - never to Maven Central (that's deploy.yml's job, via community-action-maven-release).
+# Target: https://artifacts.camunda.com/ui/repos/tree/General/camunda-bpm-community-extensions
+# (repository id "camunda-nexus", already declared in distributionManagement via the parent pom).
+# See the "deploy-jfrog" profile in pom.xml for why a plain "mvn deploy" is otherwise a no-op.
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '23'
+          distribution: 'temurin'
+          cache: maven
+          # Writes a <server id="camunda-nexus"> entry into settings.xml whose
+          # username/password are resolved from these env var names at build time
+          # (matches the "camunda-nexus" repository id in this pom's inherited
+          # distributionManagement, pointing at camunda-bpm-community-extensions).
+          server-id: camunda-nexus
+          server-username: ARTIFACTORY_USR
+          server-password: ARTIFACTORY_TOKEN
+
+      - name: Set version from release tag
+        if: github.event_name == 'release'
+        run: mvn -B versions:set -DnewVersion=${{ github.event.release.tag_name }} -DgenerateBackupPoms=false
+
+      - name: Deploy to Camunda Artifactory (camunda-bpm-community-extensions)
+        run: mvn -B -P deploy-jfrog -DskipTests deploy
+        env:
+          ARTIFACTORY_USR: ${{ secrets.NEXUS_USR }}
+          ARTIFACTORY_TOKEN: ${{ secrets.NEXUS_PSW }}

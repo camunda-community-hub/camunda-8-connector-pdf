@@ -23,6 +23,7 @@ import io.camunda.connector.pdf.watermark.PdfWatermarkFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -127,6 +128,28 @@ public class PdfFunction implements OutboundConnectorFunction, CherryConnector {
     @Override
     public List<String> getAppliesTo() {
         return List.of("bpmn:ServiceTask");
+    }
+
+    @Override
+    public int getVersion() {
+        return 0;
+    }
+
+    @Override
+    public String getRelease() {
+        try (InputStream is = PdfFunction.class.getResourceAsStream(
+                "/META-INF/maven/io.camunda.connector/pdf-function/pom.properties")) {
+            if (is != null) {
+                java.util.Properties props = new java.util.Properties();
+                props.load(is);
+                String version = props.getProperty("version");
+                if (version != null)
+                    return version;
+            }
+        } catch (Exception e) {
+            // fall through
+        }
+        return "";
     }
 
     /**
