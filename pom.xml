@@ -19,7 +19,7 @@
     <!-- 3.2.0 Use new Cherry library which include version and release, plus same value for name in connector / element-template -->
     <!-- 3.3.0 Normalize groupId and artefact id -->
     <!-- 3.3.2 Publish on maven central -->
-    <version>3.3.3-SNAPSHOT</version>
+    <version>3.3.2</version>
 
     <properties>
         <maven.compiler.release>23</maven.compiler.release>
