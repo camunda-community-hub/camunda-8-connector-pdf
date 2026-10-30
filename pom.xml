@@ -18,7 +18,7 @@
     <!-- 3.1.5 ZeebeStorage 2.5.1 and stop to write on temp folder to trace -->
     <!-- 3.2.0 Use new Cherry library which include version and release, plus same value for name in connector / element-template -->
     <!-- 3.3.0 Normalize groupId and artefact id -->
-    <version>3.3.1.b-SNAPSHOT</version>
+    <version>3.3.0</version>
 
     <properties>
         <maven.compiler.release>23</maven.compiler.release>
