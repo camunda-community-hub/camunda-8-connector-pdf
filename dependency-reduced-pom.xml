@@ -10,7 +10,7 @@
   <groupId>org.camunda.connector</groupId>
   <artifactId>connector-pdf</artifactId>
   <name>pdf</name>
-  <version>3.3.1</version>
+  <version>3.3.0</version>
   <description>Collection of PDF connectors</description>
   <build>
     <resources>
@@ -120,38 +120,41 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>deploy-jfrog</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default-deploy</id>
+                <phase>deploy</phase>
+                <configuration>
+                  <skip>false</skip>
+                </configuration>
+              </execution>
+            </executions>
+            <configuration>
+              <skip>false</skip>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
   <repositories>
     <repository>
       <releases />
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
-      <id>connectors</id>
-      <name>Connectors Repository</name>
-      <url>https://artifacts.camunda.com/artifactory/connectors/</url>
-    </repository>
-    <repository>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots />
-      <id>connectors-snapshots</id>
-      <name>Connectors Snapshot Repository</name>
-      <url>https://artifacts.camunda.com/artifactory/connectors-snapshots/</url>
+      <id>camunda-community</id>
+      <name>Camunda Community</name>
+      <url>https://artifacts.camunda.com/artifactory/camunda-bpm-community-extensions/</url>
     </repository>
   </repositories>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>connectors</id>
-      <name>Connectors Repository</name>
-      <url>https://artifacts.camunda.com/artifactory/connectors/</url>
-    </pluginRepository>
-    <pluginRepository>
-      <id>connectors-snapshots</id>
-      <name>Connectors Snapshot Repository</name>
-      <url>https://artifacts.camunda.com/artifactory/connectors-snapshots/</url>
-    </pluginRepository>
-  </pluginRepositories>
   <dependencies>
     <dependency>
       <groupId>io.camunda.connector</groupId>

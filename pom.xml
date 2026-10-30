@@ -18,7 +18,7 @@
     <!-- 3.1.5 ZeebeStorage 2.5.1 and stop to write on temp folder to trace -->
     <!-- 3.2.0 Use new Cherry library which include version and release, plus same value for name in connector / element-template -->
     <!-- 3.3.0 Normalize groupId and artefact id -->
-    <version>3.3.2-SNAPSHOT</version>
+    <version>3.3.0</version>
 
     <properties>
         <maven.compiler.release>23</maven.compiler.release>
@@ -338,13 +338,6 @@
     </build>
 
     <repositories>
-        <!--
-        <repository>
-            <id>central</id>
-            <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-        -->
-
         <repository>
             <releases>
                 <enabled>true</enabled>
@@ -352,39 +345,40 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-            <id>connectors</id>
-            <name>Connectors Repository</name>
-            <url>https://artifacts.camunda.com/artifactory/connectors/</url>
+            <id>camunda-community</id>
+            <name>Camunda Community</name>
+            <url>https://artifacts.camunda.com/artifactory/camunda-bpm-community-extensions/</url>
         </repository>
-
-        <repository>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <id>connectors-snapshots</id>
-            <name>Connectors Snapshot Repository</name>
-            <url>https://artifacts.camunda.com/artifactory/connectors-snapshots/</url>
-        </repository>
-
-
     </repositories>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>connectors</id>
-            <name>Connectors Repository</name>
-            <url>https://artifacts.camunda.com/artifactory/connectors/</url>
-        </pluginRepository>
-
-        <pluginRepository>
-            <id>connectors-snapshots</id>
-            <name>Connectors Snapshot Repository</name>
-            <url>https://artifacts.camunda.com/artifactory/connectors-snapshots/</url>
-        </pluginRepository>
-    </pluginRepositories>
-
+    <profiles>
+        <!-- Used by .github/workflows/deploy-artifactory-camunda.yml ("mvn -P deploy-jfrog deploy") to publish to the
+             Camunda Artifactory repo (camunda-bpm-community-extensions), and only there. The parent pom turns
+             maven-deploy-plugin off, so a plain "mvn deploy" stays a no-op. This profile turns it back on.
+             It needs a <server id="camunda-nexus"> entry in settings.xml with valid credentials. -->
+        <profile>
+            <id>deploy-jfrog</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>false</skip>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>default-deploy</id>
+                                <phase>deploy</phase>
+                                <configuration>
+                                    <skip>false</skip>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
