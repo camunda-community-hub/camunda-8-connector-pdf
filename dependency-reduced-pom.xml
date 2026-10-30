@@ -10,7 +10,7 @@
   <groupId>org.camunda.connector</groupId>
   <artifactId>connector-pdf</artifactId>
   <name>pdf</name>
-  <version>3.3.0</version>
+  <version>3.3.0.b</version>
   <description>Collection of PDF connectors</description>
   <build>
     <resources>
